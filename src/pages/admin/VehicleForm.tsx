@@ -1,8 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { getVehicleById, getSellers } from "@/services/supabaseService";
+import { 
+  fetchBrands, fetchModelsByBrand, fetchYearsByBrandAndModel, fetchPriceByBrandModelYear,
+  fetchBrandsMock, fetchModelsByBrandMock, fetchYearsByBrandAndModelMock, fetchPriceByBrandModelYearMock 
+} from "@/services/vehicleAPI";
 import { Vehicle, Seller } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +24,31 @@ import { Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FipePrice {
+  preco: string;
+  combustivel: string;
+  marca: string;
+  modelo: string;
+  anoModelo: number;
+  codigoFipe?: string;
+  mesReferencia?: string;
+}
+
 const VehicleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const isEditMode = !!id;
   const [sellers, setSellers] = useState<Seller[]>([]);
+  
+  // FIPE API data
+  const [brands, setBrands] = useState<{ id: string; nome: string }[]>([]);
+  const [models, setModels] = useState<{ id: string; nome: string }[]>([]);
+  const [years, setYears] = useState<{ id: string; nome: string }[]>([]);
+  const [fipePrice, setFipePrice] = useState<FipePrice | null>(null);
+  const [loadingFipe, setLoadingFipe] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [loadingYears, setLoadingYears] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<Partial<Vehicle>>({
@@ -48,6 +70,21 @@ const VehicleForm: React.FC = () => {
     status: "available",
   });
 
+  // Load brands from FIPE API
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const brandsData = await fetchBrands().catch(() => fetchBrandsMock());
+        setBrands(brandsData);
+      } catch (error) {
+        console.error("Error loading brands:", error);
+        toast.error("Erro ao carregar marcas de veículos");
+      }
+    };
+
+    loadBrands();
+  }, []);
+
   // Fetch sellers
   useEffect(() => {
     const loadSellers = async () => {
@@ -65,6 +102,14 @@ const VehicleForm: React.FC = () => {
         const vehicle = await getVehicleById(id || "");
         if (vehicle) {
           setFormData(vehicle);
+          
+          // If we have brand data, load its models
+          if (vehicle.brand) {
+            const brandObj = brands.find(b => b.nome === vehicle.brand);
+            if (brandObj) {
+              handleBrandChange(brandObj.id);
+            }
+          }
         } else {
           toast.error("Veículo não encontrado");
           navigate("/admin/vehicles");
@@ -73,7 +118,96 @@ const VehicleForm: React.FC = () => {
 
       loadVehicle();
     }
-  }, [id, isEditMode, navigate]);
+  }, [id, isEditMode, navigate, brands]);
+
+  const handleBrandChange = async (brandId: string) => {
+    setLoadingModels(true);
+    setFormData(prev => ({
+      ...prev,
+      brand: brands.find(b => b.id === brandId)?.nome || "",
+      model: "", // Reset model when brand changes
+    }));
+    
+    try {
+      const modelsData = await fetchModelsByBrand(brandId).catch(() => fetchModelsByBrandMock(brandId));
+      setModels(modelsData);
+    } catch (error) {
+      console.error("Error loading models:", error);
+      toast.error("Erro ao carregar modelos");
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  const handleModelChange = async (modelId: string) => {
+    const selectedBrand = brands.find(b => b.nome === formData.brand);
+    if (!selectedBrand) return;
+    
+    setLoadingYears(true);
+    setFormData(prev => ({
+      ...prev,
+      model: models.find(m => m.id === modelId)?.nome || "",
+    }));
+    
+    try {
+      const yearsData = await fetchYearsByBrandAndModel(selectedBrand.id, modelId)
+        .catch(() => fetchYearsByBrandAndModelMock(selectedBrand.id, modelId));
+      setYears(yearsData);
+    } catch (error) {
+      console.error("Error loading years:", error);
+      toast.error("Erro ao carregar anos");
+    } finally {
+      setLoadingYears(false);
+    }
+  };
+
+  const handleYearChange = async (yearId: string) => {
+    const selectedBrand = brands.find(b => b.nome === formData.brand);
+    const selectedModel = models.find(m => m.nome === formData.model);
+    if (!selectedBrand || !selectedModel) return;
+    
+    setLoadingFipe(true);
+    const year = parseInt(yearId.split('-')[0]);
+    setFormData(prev => ({
+      ...prev,
+      year: year,
+    }));
+    
+    try {
+      const priceData = await fetchPriceByBrandModelYear(selectedBrand.id, selectedModel.id, yearId)
+        .catch(() => fetchPriceByBrandModelYearMock(selectedBrand.id, selectedModel.id, yearId));
+      
+      if (priceData) {
+        setFipePrice(priceData);
+        
+        // Set the fuel type based on the FIPE response
+        let fuelType: "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex" = "flex";
+        const fuelLower = priceData.combustivel.toLowerCase();
+        
+        if (fuelLower.includes("gasolina")) {
+          fuelType = "gasoline";
+        } else if (fuelLower.includes("álcool") || fuelLower.includes("etanol")) {
+          fuelType = "ethanol";
+        } else if (fuelLower.includes("diesel")) {
+          fuelType = "diesel";
+        } else if (fuelLower.includes("elétrico")) {
+          fuelType = "electric";
+        } else if (fuelLower.includes("híbrido")) {
+          fuelType = "hybrid";
+        }
+        
+        setFormData(prev => ({
+          ...prev,
+          fuel: fuelType,
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading price:", error);
+      toast.error("Erro ao carregar preço FIPE");
+    } finally {
+      setLoadingFipe(false);
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -230,6 +364,18 @@ const VehicleForm: React.FC = () => {
     }
   };
 
+  // Format currency from string (R$ 10.387,00) to number
+  const formatCurrencyToNumber = (currency: string): number => {
+    if (!currency) return 0;
+    return Number(
+      currency
+        .replace("R$", "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .trim()
+    );
+  };
+
   return (
     <AdminLayout title={isEditMode ? "Editar Veículo" : "Novo Veículo"}>
       <form onSubmit={handleSubmit}>
@@ -240,41 +386,80 @@ const VehicleForm: React.FC = () => {
                 <Label htmlFor="brand">
                   Marca <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="brand"
-                  name="brand"
-                  value={formData.brand || ""}
-                  onChange={handleChange}
-                  required
-                />
+                <Select
+                  value={brands.find(b => b.nome === formData.brand)?.id || ""}
+                  onValueChange={handleBrandChange}
+                >
+                  <SelectTrigger id="brand">
+                    <SelectValue placeholder="Selecione a marca" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand.id} value={brand.id}>
+                        {brand.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="model">
                   Modelo <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="model"
-                  name="model"
-                  value={formData.model || ""}
-                  onChange={handleChange}
-                  required
-                />
+                <Select
+                  value={models.find(m => m.nome === formData.model)?.id || ""}
+                  onValueChange={handleModelChange}
+                  disabled={loadingModels || models.length === 0}
+                >
+                  <SelectTrigger id="model">
+                    <SelectValue placeholder={loadingModels ? "Carregando..." : "Selecione o modelo"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        {model.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="year">
                   Ano <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="year"
-                  name="year"
-                  type="number"
-                  min="1900"
-                  max={new Date().getFullYear() + 1}
-                  value={formData.year || ""}
-                  onChange={handleChange}
-                  required
-                />
+                <Select
+                  value={years.find(y => parseInt(y.id.split('-')[0]) === formData.year)?.id || ""}
+                  onValueChange={handleYearChange}
+                  disabled={loadingYears || years.length === 0}
+                >
+                  <SelectTrigger id="year">
+                    <SelectValue placeholder={loadingYears ? "Carregando..." : "Selecione o ano"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year.id} value={year.id}>
+                        {year.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {fipePrice && (
+                <div className="space-y-2 bg-muted p-3 rounded-md">
+                  <Label>Valor FIPE</Label>
+                  <div className="text-xl font-semibold">{fipePrice.preco}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {fipePrice.marca} {fipePrice.modelo} {fipePrice.anoModelo} - {fipePrice.combustivel}
+                  </div>
+                  {fipePrice.mesReferencia && (
+                    <div className="text-xs text-muted-foreground">
+                      Ref: {fipePrice.mesReferencia}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="price">
                   Preço (R$) <span className="text-red-500">*</span>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Car, AtSign, LockKeyhole, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
@@ -36,16 +37,20 @@ const formSchema = z.object({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { login, user } = useAuth();
+  const { user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Redirect to dashboard if already logged in
-    if (user) {
-      navigate("/admin/dashboard");
-    }
-  }, [user, navigate]);
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        navigate("/admin/dashboard");
+      }
+    };
+    
+    checkUser();
+  }, [navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,20 +62,34 @@ const Login: React.FC = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    
     try {
-      await login(values.email, values.password);
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Redirecionando para o painel de controle...",
+      // Clean up any existing auth state
+      cleanupAuthState();
+      
+      // Attempt to sign out globally first to prevent auth conflicts
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
+      // Sign in with email/password
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
-      navigate("/admin/dashboard");
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao fazer login",
-        description: "Email ou senha incorretos. Tente novamente.",
-      });
+      
+      if (error) throw error;
+      
+      if (data.user) {
+        toast.success("Login realizado com sucesso");
+        // Force page reload to ensure clean auth state
+        window.location.href = '/admin/dashboard';
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
+      toast.error(error.message || "Erro ao fazer login. Verifique suas credenciais.");
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +100,7 @@ const Login: React.FC = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-2">
-            <div className="bg-brand-blue p-3 rounded-full">
+            <div className="bg-blue-600 p-3 rounded-full">
               <Car className="h-6 w-6 text-white" />
             </div>
           </div>

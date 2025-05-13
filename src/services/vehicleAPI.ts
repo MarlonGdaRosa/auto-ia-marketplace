@@ -41,7 +41,7 @@ export const fetchCitiesByState = async (stateId: number) => {
   }
 };
 
-// API for vehicle information
+// API for vehicle information (FIPE)
 interface VehicleBrand {
   id: string;
   nome: string;
@@ -60,72 +60,210 @@ interface VehicleYear {
 interface VehiclePrice {
   preco: string;
   combustivel: string;
+  marca: string;
+  modelo: string;
+  anoModelo: number;
+  codigoFipe?: string;
+  mesReferencia?: string;
 }
 
-// Fetch brands
+// Fetch brands from FIPE API
 export const fetchBrands = async (): Promise<VehicleBrand[]> => {
   try {
-    const response = await fetch('https://lij0gcrul0.apidog.io/marcas');
+    const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarMarcas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        codigoTipoVeiculo: 1, // 1 for cars
+        codigoTabelaReferencia: 321, // This should be updated periodically
+      }),
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch brands');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return data.map((brand: any) => ({
+      id: brand.Value.toString(),
+      nome: brand.Label
+    }));
   } catch (error) {
     console.error('Error fetching brands:', error);
     return [];
   }
 };
 
-// Fetch models by brand
+// Fetch models by brand from FIPE API
 export const fetchModelsByBrand = async (brandId: string): Promise<VehicleModel[]> => {
   try {
-    const response = await fetch(`https://lij0gcrul0.apidog.io/modelos/${brandId}`);
+    const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarModelos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        codigoTipoVeiculo: 1,
+        codigoTabelaReferencia: 321,
+        codigoMarca: parseInt(brandId),
+      }),
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch models');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return data.Modelos.map((model: any) => ({
+      id: model.Value.toString(),
+      nome: model.Label,
+    }));
   } catch (error) {
     console.error('Error fetching models:', error);
     return [];
   }
 };
 
-// Fetch years by brand and model
+// Fetch years by brand and model from FIPE API
 export const fetchYearsByBrandAndModel = async (brandId: string, modelId: string): Promise<VehicleYear[]> => {
   try {
-    const response = await fetch(`https://lij0gcrul0.apidog.io/anos/${brandId}/${modelId}`);
+    const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarAnoModelo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        codigoTipoVeiculo: 1,
+        codigoTabelaReferencia: 321,
+        codigoMarca: parseInt(brandId),
+        codigoModelo: parseInt(modelId),
+      }),
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch years');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return data.map((year: any) => ({
+      id: year.Value,
+      nome: year.Label,
+    }));
   } catch (error) {
     console.error('Error fetching years:', error);
     return [];
   }
 };
 
-// Fetch price by brand, model and year
+// Fetch price by brand, model and year from FIPE API
 export const fetchPriceByBrandModelYear = async (
   brandId: string, 
   modelId: string, 
   yearId: string
 ): Promise<VehiclePrice | null> => {
   try {
-    const response = await fetch(`https://lij0gcrul0.apidog.io/preco/${brandId}/${modelId}/${yearId}`);
+    // The yearId format from the API is like "1992-1" where the last digit is the fuel type
+    const [year, fuelType] = yearId.split('-');
+    
+    const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        codigoTipoVeiculo: 1,
+        codigoTabelaReferencia: 321,
+        codigoMarca: parseInt(brandId),
+        codigoModelo: parseInt(modelId),
+        anoModelo: parseInt(year),
+        codigoTipoCombustivel: parseInt(fuelType),
+        tipoVeiculo: "carro",
+        tipoConsulta: "tradicional"
+      }),
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch price');
     }
     
-    return await response.json();
+    const data = await response.json();
+    return {
+      preco: data.Valor,
+      combustivel: data.Combustivel,
+      marca: data.Marca,
+      modelo: data.Modelo,
+      anoModelo: data.AnoModelo,
+      codigoFipe: data.CodigoFipe,
+      mesReferencia: data.MesReferencia
+    };
   } catch (error) {
     console.error('Error fetching price:', error);
     return null;
   }
 };
+
+// Fallback for local development or when FIPE API is unavailable
+export const fetchBrandsMock = async (): Promise<VehicleBrand[]> => {
+  return [
+    { id: "1", nome: "Acura" },
+    { id: "2", nome: "Audi" },
+    { id: "3", nome: "BMW" },
+    { id: "4", nome: "Chevrolet" },
+    { id: "5", nome: "Ford" },
+    { id: "6", nome: "Honda" },
+    { id: "7", nome: "Hyundai" },
+    { id: "8", nome: "Toyota" },
+    { id: "9", nome: "Volkswagen" },
+  ];
+};
+
+export const fetchModelsByBrandMock = async (brandId: string): Promise<VehicleModel[]> => {
+  const models: Record<string, VehicleModel[]> = {
+    "1": [{ id: "1", nome: "Integra GS 1.8" }, { id: "2", nome: "Legend 3.2/3.5" }, { id: "3", nome: "NSX 3.0" }],
+    "4": [{ id: "1", nome: "Camaro" }, { id: "2", nome: "Onix" }, { id: "3", nome: "Cruze" }],
+    "5": [{ id: "1", nome: "Ka" }, { id: "2", nome: "Focus" }, { id: "3", nome: "Fiesta" }],
+    "8": [{ id: "1", nome: "Corolla" }, { id: "2", nome: "Camry" }, { id: "3", nome: "Hilux" }],
+    "9": [{ id: "1", nome: "Gol" }, { id: "2", nome: "Polo" }, { id: "3", nome: "T-Cross" }],
+  };
+  
+  return models[brandId] || [];
+};
+
+export const fetchYearsByBrandAndModelMock = async (brandId: string, modelId: string): Promise<VehicleYear[]> => {
+  return [
+    { id: "1992-1", nome: "1992 Gasolina" },
+    { id: "1993-1", nome: "1993 Gasolina" },
+    { id: "2000-1", nome: "2000 Gasolina" },
+    { id: "2010-1", nome: "2010 Gasolina" },
+    { id: "2021-1", nome: "2021 Gasolina" },
+    { id: "2023-1", nome: "2023 Gasolina" },
+    { id: "2024-1", nome: "2024 Gasolina" },
+  ];
+};
+
+export const fetchPriceByBrandModelYearMock = async (
+  brandId: string, 
+  modelId: string, 
+  yearId: string
+): Promise<VehiclePrice | null> => {
+  const [year] = yearId.split('-');
+  
+  const brandName = (await fetchBrandsMock()).find(brand => brand.id === brandId)?.nome || "";
+  const modelName = (await fetchModelsByBrandMock(brandId)).find(model => model.id === modelId)?.nome || "";
+  
+  const basePrice = 30000 + Math.random() * 50000;
+  const yearFactor = parseInt(year) / 2000; // Newer cars are more expensive
+  
+  return {
+    preco: `R$ ${(basePrice * yearFactor).toFixed(2)}`,
+    combustivel: "Gasolina",
+    marca: brandName,
+    modelo: modelName,
+    anoModelo: parseInt(year),
+    codigoFipe: "123456-7",
+    mesReferencia: "maio de 2025"
+  };
+};
+
