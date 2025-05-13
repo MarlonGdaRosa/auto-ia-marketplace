@@ -64,7 +64,6 @@ export interface DashboardStats {
   newProposals: number;
 }
 
-// Adding the missing FilterOptions interface
 export interface FilterOptions {
   brand?: string;
   model?: string;

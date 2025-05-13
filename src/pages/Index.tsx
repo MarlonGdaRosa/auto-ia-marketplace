@@ -1,19 +1,20 @@
 
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import VehicleCard from "@/components/VehicleCard";
 import VehicleFilter from "@/components/VehicleFilter";
-import { getVehicles } from "@/services/mockData";
+import { getVehicles } from "@/services/supabaseService";
 import { Vehicle, FilterOptions } from "@/types";
+import { Loader2 } from "lucide-react";
 
 const Index: React.FC = () => {
   const [filters, setFilters] = useState<FilterOptions>({});
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-
-  React.useEffect(() => {
-    // Load vehicles with filters
-    setVehicles(getVehicles(filters));
-  }, [filters]);
+  
+  const { data: vehicles = [], isLoading } = useQuery({
+    queryKey: ['vehicles', filters],
+    queryFn: () => getVehicles(filters),
+  });
 
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -33,7 +34,11 @@ const Index: React.FC = () => {
           </div>
           
           <div className="md:col-span-3">
-            {vehicles.length === 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+              </div>
+            ) : vehicles.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-8 text-center">
                 <h3 className="text-lg font-medium mb-2">Nenhum veículo encontrado</h3>
                 <p className="text-gray-500">

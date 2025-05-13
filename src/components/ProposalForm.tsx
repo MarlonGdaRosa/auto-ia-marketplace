@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { createProposal } from "@/services/supabaseService";
 import {
   Dialog,
   DialogContent,
@@ -48,21 +49,27 @@ export const ProposalForm: React.FC<ProposalFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      toast.success("Proposta enviada com sucesso! Entraremos em contato em breve.", {
-        duration: 5000,
+      const success = await createProposal({
+        ...formData,
+        vehicle_id: vehicle.id
       });
       
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        message: `Olá, tenho interesse no veículo ${vehicle.brand} ${vehicle.model} (${vehicle.year}).`,
-      });
-      
-      setOpen(false);
+      if (success) {
+        toast.success("Proposta enviada com sucesso! Entraremos em contato em breve.", {
+          duration: 5000,
+        });
+        
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: `Olá, tenho interesse no veículo ${vehicle.brand} ${vehicle.model} (${vehicle.year}).`,
+        });
+        
+        setOpen(false);
+      } else {
+        throw new Error("Falha ao enviar proposta");
+      }
     } catch (error) {
       toast.error("Erro ao enviar proposta. Tente novamente.");
       console.error("Error sending proposal:", error);

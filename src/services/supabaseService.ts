@@ -1,14 +1,70 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { Vehicle, Seller, Proposal, DashboardStats } from "@/types";
+import { Vehicle, Seller, Proposal, DashboardStats, FilterOptions } from "@/types";
+import { Json } from "@/integrations/supabase/types";
 
 // Vehicle services
-export const getVehicles = async (): Promise<Vehicle[]> => {
+export const getVehicles = async (filters?: FilterOptions): Promise<Vehicle[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("vehicles")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("*");
+
+    // Apply filters if they exist
+    if (filters) {
+      if (filters.brand) {
+        query = query.eq("brand", filters.brand);
+      }
+      
+      if (filters.model) {
+        query = query.ilike("model", `%${filters.model}%`);
+      }
+      
+      if (filters.state && filters.state !== 'all') {
+        query = query.eq("location->state", filters.state);
+      }
+      
+      if (filters.city && filters.city !== 'all') {
+        query = query.eq("location->city", filters.city);
+      }
+      
+      if (filters.region) {
+        query = query.eq("location->region", filters.region);
+      }
+      
+      if (filters.minPrice !== undefined) {
+        query = query.gte("price", filters.minPrice);
+      }
+      
+      if (filters.maxPrice !== undefined) {
+        query = query.lte("price", filters.maxPrice);
+      }
+      
+      if (filters.minYear !== undefined) {
+        query = query.gte("year", filters.minYear);
+      }
+      
+      if (filters.maxYear !== undefined) {
+        query = query.lte("year", filters.maxYear);
+      }
+      
+      if (filters.transmission) {
+        query = query.eq("transmission", filters.transmission);
+      }
+      
+      if (filters.fuel && filters.fuel.length > 0) {
+        query = query.in("fuel", filters.fuel);
+      }
+      
+      if (filters.search) {
+        query = query.or(`brand.ilike.%${filters.search}%,model.ilike.%${filters.search}%`);
+      }
+    }
+
+    // Add order by created_at
+    query = query.order("created_at", { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching vehicles:", error);
@@ -18,7 +74,7 @@ export const getVehicles = async (): Promise<Vehicle[]> => {
     // Transform data to match the Vehicle interface
     return data.map(vehicle => ({
       ...vehicle,
-      location: vehicle.location as unknown as { state: string; city: string; region: string }
+      location: vehicle.location as { state: string; city: string; region: string }
     })) as Vehicle[];
   } catch (error) {
     console.error("Error in getVehicles:", error);
@@ -42,7 +98,7 @@ export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
     // Transform data to match the Vehicle interface
     return {
       ...data,
-      location: data.location as unknown as { state: string; city: string; region: string }
+      location: data.location as { state: string; city: string; region: string }
     } as Vehicle;
   } catch (error) {
     console.error("Error in getVehicleById:", error);
@@ -83,7 +139,7 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>): Promise<Vehi
     // Transform response to match the Vehicle interface
     return {
       ...data,
-      location: data.location as unknown as { state: string; city: string; region: string }
+      location: data.location as { state: string; city: string; region: string }
     } as Vehicle;
   } catch (error) {
     console.error("Error in createVehicle:", error);
@@ -108,7 +164,7 @@ export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>): 
     // Transform response to match the Vehicle interface
     return {
       ...data,
-      location: data.location as unknown as { state: string; city: string; region: string }
+      location: data.location as { state: string; city: string; region: string }
     } as Vehicle;
   } catch (error) {
     console.error("Error in updateVehicle:", error);
@@ -176,6 +232,56 @@ export const getSellerById = async (id: string): Promise<Seller | null> => {
 };
 
 // Proposal services
+export const createProposal = async (proposalData: {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  vehicle_id: string;
+}): Promise<boolean> => {
+  try {
+    // Insert the proposal into the database
+    const { data, error } = await supabase
+      .from("proposals")
+      .insert({
+        ...proposalData,
+        status: "pending"
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating proposal:", error);
+      return false;
+    }
+
+    // Trigger the edge function to send notification email
+    try {
+      const response = await fetch('https://wctgmidvzjpvuocmqvfz.supabase.co/functions/v1/send-proposal-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY || ''}`
+        },
+        body: JSON.stringify({
+          proposal_id: data.id
+        })
+      });
+
+      if (!response.ok) {
+        console.warn('Failed to trigger notification, but proposal was created');
+      }
+    } catch (notificationError) {
+      console.warn('Error sending notification, but proposal was created:', notificationError);
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in createProposal:", error);
+    return false;
+  }
+};
+
 export const getProposals = async (): Promise<Proposal[]> => {
   try {
     const { data, error } = await supabase
@@ -188,11 +294,7 @@ export const getProposals = async (): Promise<Proposal[]> => {
       return [];
     }
 
-    // Transform data to match the Proposal interface
-    return data.map(proposal => ({
-      ...proposal,
-      vehicle: proposal.vehicle
-    })) as Proposal[];
+    return data as Proposal[];
   } catch (error) {
     console.error("Error in getProposals:", error);
     return [];
@@ -242,46 +344,49 @@ export const updateProposalStatus = async (id: string, status: string): Promise<
 export const getDashboardStats = async (): Promise<DashboardStats> => {
   try {
     // Get counts for vehicles by status
-    const { data: vehicleCounts, error: vehicleError } = await supabase
+    const { data: availableVehicles, error: availableError } = await supabase
       .from("vehicles")
-      .select("status", { count: 'exact' })
-      .in("status", ["available", "sold", "reserved"]);
+      .select("id", { count: 'exact' })
+      .eq("status", "available");
 
-    if (vehicleError) {
-      console.error("Error fetching vehicle counts:", vehicleError);
-    }
+    const { data: soldVehicles, error: soldError } = await supabase
+      .from("vehicles")
+      .select("id", { count: 'exact' })
+      .eq("status", "sold");
 
-    const totalVehicles = vehicleCounts?.length || 0;
-    const soldVehicles = vehicleCounts?.filter(v => v.status === "sold").length || 0;
-    const reservedVehicles = vehicleCounts?.filter(v => v.status === "reserved").length || 0;
+    const { data: reservedVehicles, error: reservedError } = await supabase
+      .from("vehicles")
+      .select("id", { count: 'exact' })
+      .eq("status", "reserved");
 
     // Get counts for proposals by status
-    const { data: proposalCounts, error: proposalError } = await supabase
+    const { data: pendingProposals, error: pendingError } = await supabase
       .from("proposals")
-      .select("status", { count: 'exact' })
-      .in("status", ["pending", "contacted", "closed"]);
+      .select("id", { count: 'exact' })
+      .eq("status", "pending");
 
-    if (proposalError) {
-      console.error("Error fetching proposal counts:", proposalError);
-    }
+    const { data: contactedProposals, error: contactedError } = await supabase
+      .from("proposals")
+      .select("id", { count: 'exact' })
+      .eq("status", "contacted");
 
-    const totalProposals = proposalCounts?.length || 0;
-    const pendingProposals = proposalCounts?.filter(p => p.status === "pending").length || 0;
-    const contactedProposals = proposalCounts?.filter(p => p.status === "contacted").length || 0;
-    const closedProposals = proposalCounts?.filter(p => p.status === "closed").length || 0;
+    const { data: closedProposals, error: closedError } = await supabase
+      .from("proposals")
+      .select("id", { count: 'exact' })
+      .eq("status", "closed");
 
-    // Get top brand
-    const { data: brands, error: brandsError } = await supabase
+    // Get all vehicles to determine top brand
+    const { data: vehicles, error: vehiclesError } = await supabase
       .from("vehicles")
       .select("brand");
 
-    if (brandsError) {
-      console.error("Error fetching brands:", brandsError);
+    if (vehiclesError) {
+      console.error("Error fetching vehicles for stats:", vehiclesError);
     }
 
     // Count occurrences of each brand
     const brandCounts: Record<string, number> = {};
-    brands?.forEach(vehicle => {
+    vehicles?.forEach(vehicle => {
       brandCounts[vehicle.brand] = (brandCounts[vehicle.brand] || 0) + 1;
     });
 
@@ -296,19 +401,27 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       }
     });
 
+    const totalVehicles = (availableVehicles?.length || 0) + 
+                         (soldVehicles?.length || 0) + 
+                         (reservedVehicles?.length || 0);
+
+    const totalProposals = (pendingProposals?.length || 0) + 
+                          (contactedProposals?.length || 0) + 
+                          (closedProposals?.length || 0);
+
     return {
       totalVehicles: totalVehicles,
-      soldVehicles: soldVehicles,
-      reservedVehicles: reservedVehicles,
+      soldVehicles: soldVehicles?.length || 0,
+      reservedVehicles: reservedVehicles?.length || 0,
       totalProposals: totalProposals,
-      pendingProposals: pendingProposals,
-      contactedProposals: contactedProposals,
-      closedProposals: closedProposals,
+      pendingProposals: pendingProposals?.length || 0,
+      contactedProposals: contactedProposals?.length || 0,
+      closedProposals: closedProposals?.length || 0,
       topBrand: {
         name: topBrandName,
         count: topBrandCount
       },
-      newProposals: pendingProposals
+      newProposals: pendingProposals?.length || 0
     };
 
   } catch (error) {

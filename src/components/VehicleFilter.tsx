@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FilterOptions } from "@/types";
-import { fetchStates, fetchCitiesByState, fetchBrands } from "@/services/vehicleAPI";
+import { fetchStates, fetchCitiesByState, fetchBrands, fetchModelsByBrand } from "@/services/vehicleAPI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,6 +41,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedBrand, setSelectedBrand] = useState<string>("");
 
   // Queries for external data
   const { data: states = [] } = useQuery({
@@ -53,9 +55,15 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     enabled: !!selectedState
   });
 
-  const { data: brands = [] } = useQuery({
+  const { data: brands = [], isLoading: isLoadingBrands } = useQuery({
     queryKey: ['brands'],
     queryFn: fetchBrands
+  });
+
+  const { data: models = [], isLoading: isLoadingModels } = useQuery({
+    queryKey: ['models', selectedBrand],
+    queryFn: () => fetchModelsByBrand(selectedBrand),
+    enabled: !!selectedBrand && selectedBrand !== "all"
   });
 
   useEffect(() => {
@@ -63,7 +71,30 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     if (initialFilters.search) {
       setSearch(initialFilters.search);
     }
-  }, [initialFilters]);
+    
+    // Set initial ranges if they exist in filters
+    if (initialFilters.minPrice !== undefined || initialFilters.maxPrice !== undefined) {
+      setPriceRange([
+        initialFilters.minPrice || 0,
+        initialFilters.maxPrice || 500000
+      ]);
+    }
+    
+    if (initialFilters.minYear !== undefined || initialFilters.maxYear !== undefined) {
+      setYearRange([
+        initialFilters.minYear || 2010,
+        initialFilters.maxYear || new Date().getFullYear()
+      ]);
+    }
+
+    // Set selected brand if it exists in filters
+    if (initialFilters.brand) {
+      const brandItem = brands.find(b => b.nome === initialFilters.brand);
+      if (brandItem) {
+        setSelectedBrand(brandItem.id);
+      }
+    }
+  }, [initialFilters, brands]);
 
   const handleFilterChange = (
     key: keyof FilterOptions,
@@ -74,7 +105,14 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     // Handle special case for state selection
     if (key === "state" && value !== filters.state) {
       newFilters.city = undefined; // Reset city when state changes
-      setSelectedState(value ? states.find((s: any) => s.sigla === value)?.id : "");
+      setSelectedState(value && value !== "all" ? states.find((s: any) => s.sigla === value)?.id : "");
+    }
+
+    // Handle special case for brand selection
+    if (key === "brand" && value !== filters.brand) {
+      newFilters.model = undefined; // Reset model when brand changes
+      const brandItem = brands.find(b => b.nome === value);
+      setSelectedBrand(brandItem?.id || "");
     }
 
     setFilters(newFilters);
@@ -109,6 +147,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     setPriceRange([0, 500000]);
     setYearRange([2010, new Date().getFullYear()]);
     setSelectedState("");
+    setSelectedBrand("");
     setFilters({});
     onFilterChange({});
   };
@@ -164,7 +203,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
           </div>
           <Select
             value={filters.brand || ""}
-            onValueChange={(value) => handleFilterChange("brand", value)}
+            onValueChange={(value) => handleFilterChange("brand", value === "all" ? undefined : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Todas as marcas" />
@@ -182,6 +221,30 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
           </Select>
         </div>
 
+        {filters.brand && (
+          <div className="space-y-2">
+            <Label>Modelo</Label>
+            <Select
+              value={filters.model || ""}
+              onValueChange={(value) => handleFilterChange("model", value === "all" ? undefined : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todos os modelos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all">Todos os modelos</SelectItem>
+                  {models.map((model: any) => (
+                    <SelectItem key={model.id} value={model.nome}>
+                      {model.nome}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <div className="space-y-2">
           <div className="flex items-center">
             <Map className="h-4 w-4 mr-1.5 text-gray-500" />
@@ -189,7 +252,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
           </div>
           <Select
             value={filters.state || ""}
-            onValueChange={(value) => handleFilterChange("state", value)}
+            onValueChange={(value) => handleFilterChange("state", value === "all" ? undefined : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Todos os estados" />
@@ -212,7 +275,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
             <Label>Cidade</Label>
             <Select
               value={filters.city || ""}
-              onValueChange={(value) => handleFilterChange("city", value)}
+              onValueChange={(value) => handleFilterChange("city", value === "all" ? undefined : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Todas as cidades" />
