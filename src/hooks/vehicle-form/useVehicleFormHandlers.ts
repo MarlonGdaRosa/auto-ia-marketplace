@@ -15,8 +15,23 @@ export const useVehicleFormHandlers = (
   };
 
   const handleMileageChange = (value: string | undefined) => {
-    // Convert to number for storage
-    const numValue = value ? parseInt(value.replace(/\./g, '').replace(',', '')) : 0;
+    // Convert to number for storage, ensuring we handle the input properly
+    let numValue = 0;
+    
+    if (value) {
+      // Remove non-numeric characters except digits and dots
+      const cleanValue = value.replace(/[^\d.]/g, '');
+      // Remove dots (thousand separators)
+      const noDotsValue = cleanValue.replace(/\./g, '');
+      // Parse as integer
+      numValue = parseInt(noDotsValue);
+      
+      // If parsing failed, default to 0
+      if (isNaN(numValue)) {
+        numValue = 0;
+      }
+    }
+    
     setFormData({
       ...formData,
       mileage: numValue

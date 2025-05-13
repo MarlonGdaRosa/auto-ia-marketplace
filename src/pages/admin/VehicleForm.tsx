@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { getVehicleById, getSellers } from "@/services/supabaseService";
-import FipeVehicleSelector from "@/components/FipeVehicleSelector";
+import TextVehicleInfo from "@/components/TextVehicleInfo";
 import LocationSelector from "@/components/LocationSelector";
 import { Vehicle, Seller } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -111,13 +111,11 @@ const VehicleForm: React.FC = () => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6">
           <div className="grid grid-cols-1 gap-6">
-            {/* FIPE Vehicle Selector */}
-            <FipeVehicleSelector 
+            {/* Text Vehicle Info (replacing FIPE selector) */}
+            <TextVehicleInfo 
               onBrandChange={(brand) => setFormData({...formData, brand})}
               onModelChange={(model) => setFormData({...formData, model})}
               onYearChange={(year) => setFormData({...formData, year})}
-              onFuelChange={(fuel) => setFormData({...formData, fuel})}
-              onFipePriceChange={setFipePrice}
               initialBrand={formData.brand}
               initialModel={formData.model}
               initialYear={formData.year}

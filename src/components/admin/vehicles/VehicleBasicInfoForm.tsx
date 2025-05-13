@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatCurrency, formatMileage } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import CurrencyInput from "react-currency-input-field";
 import { Seller } from "@/types";
 
@@ -56,10 +56,10 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
           <CurrencyInput
             id="mileage"
             name="mileage"
-            placeholder="0"
+            placeholder="0 km"
             defaultValue={formData.mileage}
             decimalsLimit={0}
-            decimalSeparator=","
+            decimalSeparator=""
             groupSeparator="."
             suffix=" km"
             onValueChange={handleMileageChange}
