@@ -1,16 +1,15 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { 
-  Calendar, 
-  MapPin, 
+import { Vehicle } from "@/types";
+import {
+  Calendar,
   Gauge,
+  MapPin,
   Settings,
   Fuel,
-  ArrowRight
 } from "lucide-react";
-import { Vehicle } from "@/types";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatMileage } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -19,7 +18,7 @@ interface VehicleCardProps {
   vehicle: Vehicle;
 }
 
-export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
   const getFuelIcon = (fuel: string) => {
     switch (fuel) {
       case "gasoline":
@@ -40,11 +39,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
   };
 
   return (
-    <Card className="overflow-hidden card-hover">
-      <div className="aspect-video relative overflow-hidden">
-        <img 
-          src={vehicle.images[0] || "/placeholder.svg"} 
-          alt={`${vehicle.brand} ${vehicle.model}`} 
+    <Card className="overflow-hidden h-full flex flex-col">
+      <div className="aspect-[4/3] relative">
+        <img
+          src={vehicle.images[0] || "/placeholder.svg"}
+          alt={`${vehicle.brand} ${vehicle.model}`}
           className="w-full h-full object-cover"
         />
         {vehicle.status === "sold" && (
@@ -58,42 +57,41 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
           </div>
         )}
       </div>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-heading font-bold text-lg">{vehicle.brand} {vehicle.model}</h3>
-          <p className="font-bold text-lg text-brand-blue">{formatCurrency(vehicle.price)}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600 mb-4">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
+      <CardContent className="flex flex-col flex-grow p-4">
+        <h3 className="text-lg font-semibold">
+          {vehicle.brand} {vehicle.model}
+        </h3>
+        <p className="text-xl font-bold text-brand-blue mb-2">
+          {formatCurrency(vehicle.price)}
+        </p>
+        <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
+          <div className="flex items-center">
+            <Calendar className="h-4 w-4 mr-1 text-gray-500" />
             <span>{vehicle.year}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Gauge className="h-4 w-4" />
-            <span>{vehicle.mileage.toLocaleString()} km</span>
+          <div className="flex items-center">
+            <Gauge className="h-4 w-4 mr-1 text-gray-500" />
+            <span>{formatMileage(vehicle.mileage)}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Settings className="h-4 w-4" />
-            <span>{vehicle.transmission === "automatic" ? "Automático" : "Manual"}</span>
+          <div className="flex items-center">
+            <Settings className="h-4 w-4 mr-1 text-gray-500" />
+            <span>{vehicle.transmission === "automatic" ? "Auto" : "Manual"}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Fuel className="h-4 w-4" />
+          <div className="flex items-center">
+            <Fuel className="h-4 w-4 mr-1 text-gray-500" />
             <span>{getFuelIcon(vehicle.fuel)}</span>
           </div>
         </div>
-        
-        <div className="flex items-center text-sm text-gray-500 mb-4">
-          <MapPin className="h-4 w-4 mr-1" />
-          <span>{vehicle.location.city}, {vehicle.location.state}</span>
+        <div className="flex items-center text-sm text-gray-500 mb-3 mt-auto">
+          <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
+          <span className="truncate">
+            {vehicle.location.city}, {vehicle.location.state}
+          </span>
         </div>
-        
-        <Link 
-          to={`/vehicle/${vehicle.id}`}
-          className="flex items-center justify-center gap-1 w-full bg-brand-blue text-white p-2 rounded-md hover:bg-brand-blue-dark transition-colors"
-        >
-          Ver detalhes 
-          <ArrowRight className="h-4 w-4" />
+        <Link to={`/vehicle/${vehicle.id}`} className="block">
+          <button className="w-full py-2 px-4 bg-brand-blue text-white rounded-md hover:bg-blue-700 transition">
+            Ver detalhes
+          </button>
         </Link>
       </CardContent>
     </Card>

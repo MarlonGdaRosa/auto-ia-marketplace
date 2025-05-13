@@ -1,362 +1,362 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { FilterOptions } from "@/types";
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { fetchStates, fetchCitiesByState, fetchBrands } from "@/services/vehicleAPI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { CheckIcon, Settings, Filter, Search, X } from "lucide-react";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { formatCurrency } from "@/lib/format";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
-
-// Mock data
-const brands = [
-  "Toyota", "Honda", "Ford", "Volkswagen", "Chevrolet", "Hyundai", "Fiat", "BMW", "Mercedes-Benz", "Audi", "Nissan"
-];
-
-const states = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", 
-  "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-];
-
-const cities = {
-  "SP": ["São Paulo", "Campinas", "Santos", "Ribeirão Preto", "São José dos Campos"],
-  "RJ": ["Rio de Janeiro", "Niterói", "Duque de Caxias", "Nova Iguaçu"],
-  "MG": ["Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora"]
-};
+  Search,
+  Car,
+  Map,
+  Settings,
+  Fuel,
+  Filter,
+  X,
+} from "lucide-react";
 
 interface VehicleFilterProps {
-  initialFilters?: FilterOptions;
+  initialFilters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
 }
 
-export const VehicleFilter: React.FC<VehicleFilterProps> = ({
-  initialFilters = {},
+const VehicleFilter: React.FC<VehicleFilterProps> = ({
+  initialFilters,
   onFilterChange,
 }) => {
   const [filters, setFilters] = useState<FilterOptions>(initialFilters);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500000]);
-  const [yearRange, setYearRange] = useState<[number, number]>([2000, new Date().getFullYear()]);
+  const [yearRange, setYearRange] = useState<[number, number]>([2010, new Date().getFullYear()]);
   const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState(false);
+  const [selectedState, setSelectedState] = useState<string>("");
 
-  const handleFilterChange = (key: keyof FilterOptions, value: any) => {
-    const updatedFilters = { ...filters, [key]: value };
-    setFilters(updatedFilters);
+  // Queries for external data
+  const { data: states = [] } = useQuery({
+    queryKey: ['states'],
+    queryFn: fetchStates
+  });
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ['cities', selectedState],
+    queryFn: () => fetchCitiesByState(Number(selectedState)),
+    enabled: !!selectedState
+  });
+
+  const { data: brands = [] } = useQuery({
+    queryKey: ['brands'],
+    queryFn: fetchBrands
+  });
+
+  useEffect(() => {
+    // When component mounts, set search from initial filters
+    if (initialFilters.search) {
+      setSearch(initialFilters.search);
+    }
+  }, [initialFilters]);
+
+  const handleFilterChange = (
+    key: keyof FilterOptions,
+    value: any
+  ) => {
+    const newFilters = { ...filters, [key]: value };
+    
+    // Handle special case for state selection
+    if (key === "state" && value !== filters.state) {
+      newFilters.city = undefined; // Reset city when state changes
+      setSelectedState(value ? states.find((s: any) => s.sigla === value)?.id : "");
+    }
+
+    setFilters(newFilters);
   };
 
-  const handlePriceRangeChange = (value: number[]) => {
+  const handlePriceChange = (value: number[]) => {
     setPriceRange([value[0], value[1]]);
-  };
-
-  const handleYearRangeChange = (value: number[]) => {
-    setYearRange([value[0], value[1]]);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const updatedFilters = { ...filters, search };
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
-  };
-
-  const applyFilters = () => {
-    const updatedFilters = {
+    setFilters({
       ...filters,
-      minPrice: priceRange[0],
-      maxPrice: priceRange[1],
-      minYear: yearRange[0],
-      maxYear: yearRange[1],
-    };
-    setFilters(updatedFilters);
-    onFilterChange(updatedFilters);
+      minPrice: value[0],
+      maxPrice: value[1]
+    });
   };
 
-  const clearFilters = () => {
-    const emptyFilters: FilterOptions = {};
-    setFilters(emptyFilters);
-    setPriceRange([0, 500000]);
-    setYearRange([2000, new Date().getFullYear()]);
+  const handleYearChange = (value: number[]) => {
+    setYearRange([value[0], value[1]]);
+    setFilters({
+      ...filters,
+      minYear: value[0],
+      maxYear: value[1]
+    });
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFilters({ ...filters, search });
+    onFilterChange({ ...filters, search });
+  };
+
+  const handleClearFilters = () => {
     setSearch("");
-    onFilterChange(emptyFilters);
+    setPriceRange([0, 500000]);
+    setYearRange([2010, new Date().getFullYear()]);
+    setSelectedState("");
+    setFilters({});
+    onFilterChange({});
   };
 
-  const availableCities = (filters.state && filters.state in cities) 
-    ? cities[filters.state as keyof typeof cities] 
-    : [];
+  const handleApplyFilters = () => {
+    onFilterChange(filters);
+  };
 
-  const hasActiveFilters = Object.keys(filters).some(
-    (key) => key !== 'search' && filters[key as keyof FilterOptions] !== undefined
-  );
-
-  // Desktop filters
-  const DesktopFilters = () => (
-    <div className="bg-white rounded-lg shadow-sm border p-4">
-      <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex gap-2">
+  return (
+    <div className="rounded-lg bg-white shadow-sm p-4">
+      <div className="mb-4">
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           <Input
-            placeholder="Buscar marca ou modelo..."
+            placeholder="Buscar por marca ou modelo..."
+            className="pl-10 pr-16"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1"
           />
-          <Button type="submit">
-            <Search className="h-4 w-4 mr-2" />
+          <Button
+            type="submit"
+            size="sm"
+            className="absolute right-1 top-1 h-8"
+          >
             Buscar
           </Button>
         </form>
       </div>
 
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="brand-model">
-          <AccordionTrigger>Marca e Modelo</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="brand">Marca</Label>
-                <Select
-                  value={filters.brand}
-                  onValueChange={(value) => handleFilterChange("brand", value)}
-                >
-                  <SelectTrigger id="brand">
-                    <SelectValue placeholder="Selecione a marca" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand} value={brand}>
-                        {brand}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="location">
-          <AccordionTrigger>Localização</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="state">Estado</Label>
-                <Select
-                  value={filters.state}
-                  onValueChange={(value) => handleFilterChange("state", value)}
-                >
-                  <SelectTrigger id="state">
-                    <SelectValue placeholder="Selecione o estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {states.map((state) => (
-                      <SelectItem key={state} value={state}>
-                        {state}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {filters.state && (
-                <div className="space-y-2">
-                  <Label htmlFor="city">Cidade</Label>
-                  <Select
-                    value={filters.city}
-                    onValueChange={(value) => handleFilterChange("city", value)}
-                    disabled={!filters.state}
-                  >
-                    <SelectTrigger id="city">
-                      <SelectValue placeholder="Selecione a cidade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableCities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="price">
-          <AccordionTrigger>Preço</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">R$ {priceRange[0].toLocaleString()}</span>
-                  <span className="text-sm">R$ {priceRange[1].toLocaleString()}</span>
-                </div>
-                <Slider
-                  defaultValue={[priceRange[0], priceRange[1]]}
-                  min={0}
-                  max={500000}
-                  step={1000}
-                  value={[priceRange[0], priceRange[1]]}
-                  onValueChange={handlePriceRangeChange}
-                  className="my-4"
-                />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="year">
-          <AccordionTrigger>Ano</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">{yearRange[0]}</span>
-                  <span className="text-sm">{yearRange[1]}</span>
-                </div>
-                <Slider
-                  defaultValue={[yearRange[0], yearRange[1]]}
-                  min={1990}
-                  max={new Date().getFullYear()}
-                  step={1}
-                  value={[yearRange[0], yearRange[1]]}
-                  onValueChange={handleYearRangeChange}
-                  className="my-4"
-                />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        <AccordionItem value="features">
-          <AccordionTrigger>Características</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="transmission">Câmbio</Label>
-                <Select
-                  value={filters.transmission}
-                  onValueChange={(value) => 
-                    handleFilterChange("transmission", value as "manual" | "automatic")
-                  }
-                >
-                  <SelectTrigger id="transmission">
-                    <SelectValue placeholder="Selecione o câmbio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">Manual</SelectItem>
-                    <SelectItem value="automatic">Automático</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Combustível</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {["gasoline", "ethanol", "diesel", "electric", "hybrid", "flex"].map((fuel) => {
-                    const fuelLabels: Record<string, string> = {
-                      gasoline: "Gasolina",
-                      ethanol: "Etanol",
-                      diesel: "Diesel",
-                      electric: "Elétrico",
-                      hybrid: "Híbrido",
-                      flex: "Flex",
-                    };
-
-                    const isSelected = filters.fuel?.includes(fuel);
-
-                    return (
-                      <Button
-                        key={fuel}
-                        type="button"
-                        variant={isSelected ? "default" : "outline"}
-                        className={cn("justify-start", isSelected && "bg-brand-blue text-white")}
-                        onClick={() => {
-                          const currentFuels = filters.fuel || [];
-                          const newFuels = isSelected
-                            ? currentFuels.filter((f) => f !== fuel)
-                            : [...currentFuels, fuel];
-                          handleFilterChange("fuel", newFuels);
-                        }}
-                      >
-                        {isSelected && <CheckIcon className="h-4 w-4 mr-2" />}
-                        {fuelLabels[fuel]}
-                      </Button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-
-      <div className="mt-6 space-y-2">
-        <Button className="w-full" onClick={applyFilters}>
-          Aplicar Filtros
-        </Button>
-        {hasActiveFilters && (
-          <Button variant="outline" className="w-full" onClick={clearFilters}>
-            Limpar Filtros
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <Filter className="h-4 w-4 mr-1.5" />
+          <h3 className="font-medium">Filtros</h3>
+        </div>
+        {Object.keys(filters).length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-gray-500 hover:text-red-600"
+            onClick={handleClearFilters}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Limpar filtros
           </Button>
         )}
       </div>
-    </div>
-  );
 
-  // Mobile filter button and drawer
-  const MobileFilters = () => (
-    <div className="fixed bottom-4 right-4 z-10 md:hidden">
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button className="rounded-full h-12 w-12 shadow-lg">
-            <Filter className="h-5 w-5" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85%]">
-          <SheetHeader>
-            <SheetTitle>Filtros</SheetTitle>
-            <SheetDescription>Ajuste os filtros para sua busca.</SheetDescription>
-          </SheetHeader>
-          <div className="py-4">
-            <DesktopFilters />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Car className="h-4 w-4 mr-1.5 text-gray-500" />
+            <Label>Marca</Label>
           </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
+          <Select
+            value={filters.brand || ""}
+            onValueChange={(value) => handleFilterChange("brand", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todas as marcas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="">Todas as marcas</SelectItem>
+                {brands.map((brand: any) => (
+                  <SelectItem key={brand.id} value={brand.nome}>
+                    {brand.nome}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
 
-  return (
-    <>
-      <div className="hidden md:block">
-        <DesktopFilters />
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Map className="h-4 w-4 mr-1.5 text-gray-500" />
+            <Label>Estado</Label>
+          </div>
+          <Select
+            value={filters.state || ""}
+            onValueChange={(value) => handleFilterChange("state", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Todos os estados" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="">Todos os estados</SelectItem>
+                {states.map((state: any) => (
+                  <SelectItem key={state.id} value={state.sigla}>
+                    {state.nome}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {filters.state && (
+          <div className="space-y-2">
+            <Label>Cidade</Label>
+            <Select
+              value={filters.city || ""}
+              onValueChange={(value) => handleFilterChange("city", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Todas as cidades" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="">Todas as cidades</SelectItem>
+                  {cities.map((city: any) => (
+                    <SelectItem key={city.id} value={city.nome}>
+                      {city.nome}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Settings className="h-4 w-4 mr-1.5 text-gray-500" />
+            <Label>Câmbio</Label>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant={filters.transmission === "automatic" ? "default" : "outline"} 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleFilterChange("transmission", filters.transmission === "automatic" ? undefined : "automatic")}
+            >
+              Automático
+            </Button>
+            <Button 
+              variant={filters.transmission === "manual" ? "default" : "outline"} 
+              size="sm" 
+              className="flex-1"
+              onClick={() => handleFilterChange("transmission", filters.transmission === "manual" ? undefined : "manual")}
+            >
+              Manual
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <Fuel className="h-4 w-4 mr-1.5 text-gray-500" />
+            <Label>Combustível</Label>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
+              variant={filters.fuel?.includes("flex") ? "default" : "outline"} 
+              size="sm"
+              onClick={() => {
+                const currentFuels = filters.fuel || [];
+                const newFuels = currentFuels.includes("flex")
+                  ? currentFuels.filter(f => f !== "flex")
+                  : [...currentFuels, "flex"];
+                handleFilterChange("fuel", newFuels.length ? newFuels : undefined);
+              }}
+            >
+              Flex
+            </Button>
+            <Button 
+              variant={filters.fuel?.includes("gasoline") ? "default" : "outline"} 
+              size="sm"
+              onClick={() => {
+                const currentFuels = filters.fuel || [];
+                const newFuels = currentFuels.includes("gasoline")
+                  ? currentFuels.filter(f => f !== "gasoline")
+                  : [...currentFuels, "gasoline"];
+                handleFilterChange("fuel", newFuels.length ? newFuels : undefined);
+              }}
+            >
+              Gasolina
+            </Button>
+            <Button 
+              variant={filters.fuel?.includes("diesel") ? "default" : "outline"} 
+              size="sm"
+              onClick={() => {
+                const currentFuels = filters.fuel || [];
+                const newFuels = currentFuels.includes("diesel")
+                  ? currentFuels.filter(f => f !== "diesel")
+                  : [...currentFuels, "diesel"];
+                handleFilterChange("fuel", newFuels.length ? newFuels : undefined);
+              }}
+            >
+              Diesel
+            </Button>
+            <Button 
+              variant={filters.fuel?.includes("electric") ? "default" : "outline"} 
+              size="sm"
+              onClick={() => {
+                const currentFuels = filters.fuel || [];
+                const newFuels = currentFuels.includes("electric")
+                  ? currentFuels.filter(f => f !== "electric")
+                  : [...currentFuels, "electric"];
+                handleFilterChange("fuel", newFuels.length ? newFuels : undefined);
+              }}
+            >
+              Elétrico
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center justify-between">
+            <span>Preço</span>
+            <span className="text-sm text-gray-500">
+              {formatCurrency(priceRange[0])} - {formatCurrency(priceRange[1])}
+            </span>
+          </Label>
+          <Slider
+            min={0}
+            max={500000}
+            step={5000}
+            value={priceRange}
+            onValueChange={handlePriceChange}
+            className="py-4"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center justify-between">
+            <span>Ano</span>
+            <span className="text-sm text-gray-500">
+              {yearRange[0]} - {yearRange[1]}
+            </span>
+          </Label>
+          <Slider
+            min={2000}
+            max={new Date().getFullYear()}
+            step={1}
+            value={yearRange}
+            onValueChange={handleYearChange}
+            className="py-4"
+          />
+        </div>
+
+        <Button className="w-full mt-2" onClick={handleApplyFilters}>
+          Aplicar filtros
+        </Button>
       </div>
-      <MobileFilters />
-    </>
+    </div>
   );
 };
 

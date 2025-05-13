@@ -1,46 +1,34 @@
 
+// Format currency (R$)
 export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 };
 
+// Format date
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat("pt-BR").format(date);
+  return date.toLocaleDateString('pt-BR');
 };
 
-export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date);
-};
-
+// Format phone number as (XX) XXXXX-XXXX
 export const formatPhone = (phone: string): string => {
-  // Format phone as (XX) XXXXX-XXXX or (XX) XXXX-XXXX
-  // Remove non-numeric characters
-  const numbers = phone.replace(/\D/g, '');
+  const cleaned = phone.replace(/\D/g, '');
   
-  if (numbers.length === 11) {
-    return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 7)}-${numbers.substring(7)}`;
-  } else if (numbers.length === 10) {
-    return `(${numbers.substring(0, 2)}) ${numbers.substring(2, 6)}-${numbers.substring(6)}`;
+  if (cleaned.length === 11) {
+    return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7, 11)}`;
+  } else if (cleaned.length === 10) {
+    return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
   }
   
-  return phone;
+  return phone; // return original if format doesn't match
 };
 
-export const formatCpf = (cpf: string): string => {
-  // Format CPF as XXX.XXX.XXX-XX
-  // Remove non-numeric characters
-  const numbers = cpf.replace(/\D/g, '');
-  
-  if (numbers.length === 11) {
-    return `${numbers.substring(0, 3)}.${numbers.substring(3, 6)}.${numbers.substring(6, 9)}-${numbers.substring(9)}`;
-  }
-  
-  return cpf;
+// Format mileage with suffixes (0 km, 10 km, 100 km, 1.000 km, 10.000 km)
+export const formatMileage = (mileage: number): string => {
+  return `${mileage.toLocaleString('pt-BR')} km`;
 };

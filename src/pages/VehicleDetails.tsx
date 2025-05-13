@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import ProposalForm from "@/components/ProposalForm";
-import { getVehicleById, getSellerById } from "@/services/mockData";
-import { formatCurrency, formatPhone } from "@/lib/format";
+import { getVehicleById, getSellerById } from "@/services/supabaseService";
+import { formatCurrency, formatPhone, formatMileage } from "@/lib/format";
 import {
   Calendar,
   MapPin,
@@ -16,6 +17,7 @@ import {
   Phone,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,8 +28,30 @@ const VehicleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  const vehicle = getVehicleById(id || "");
-  const seller = vehicle?.sellerId ? getSellerById(vehicle.sellerId) : null;
+  const { data: vehicle, isLoading: isLoadingVehicle } = useQuery({
+    queryKey: ['vehicle', id],
+    queryFn: () => getVehicleById(id || ""),
+    enabled: !!id
+  });
+  
+  const { data: seller, isLoading: isLoadingSeller } = useQuery({
+    queryKey: ['seller', vehicle?.sellerId],
+    queryFn: () => getSellerById(vehicle?.sellerId || ""),
+    enabled: !!vehicle?.sellerId
+  });
+  
+  if (isLoadingVehicle) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-12 flex justify-center items-center">
+          <div className="flex flex-col items-center">
+            <Loader2 className="h-10 w-10 text-brand-blue animate-spin mb-4" />
+            <p className="text-gray-600">Carregando detalhes do veículo...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   
   if (!vehicle) {
     return (
@@ -198,7 +222,7 @@ const VehicleDetails: React.FC = () => {
                 <div className="flex flex-col items-center p-3 bg-gray-50 rounded-lg">
                   <Gauge className="h-5 w-5 text-gray-600 mb-1" />
                   <span className="font-semibold">
-                    {vehicle.mileage.toLocaleString()} km
+                    {formatMileage(vehicle.mileage)}
                   </span>
                   <span className="text-xs text-gray-500">Quilometragem</span>
                 </div>
@@ -268,7 +292,21 @@ const VehicleDetails: React.FC = () => {
               </div>
             </div>
 
-            {seller && (
+            {isLoadingSeller ? (
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="bg-gray-200 p-4 rounded-full"></div>
+                    <div className="w-full">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded w-full"></div>
+                </div>
+              </div>
+            ) : seller ? (
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h3 className="text-lg font-semibold mb-4">Informações do vendedor</h3>
 
@@ -290,7 +328,7 @@ const VehicleDetails: React.FC = () => {
                   {formatPhone(seller.phone)}
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
