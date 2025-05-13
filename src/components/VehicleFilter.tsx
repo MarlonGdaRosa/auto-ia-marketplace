@@ -172,7 +172,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="">Todas as marcas</SelectItem>
+                <SelectItem value="all">Todas as marcas</SelectItem>
                 {brands.map((brand: any) => (
                   <SelectItem key={brand.id} value={brand.nome}>
                     {brand.nome}
@@ -197,7 +197,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="">Todos os estados</SelectItem>
+                <SelectItem value="all">Todos os estados</SelectItem>
                 {states.map((state: any) => (
                   <SelectItem key={state.id} value={state.sigla}>
                     {state.nome}
@@ -220,7 +220,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="">Todas as cidades</SelectItem>
+                  <SelectItem value="all">Todas as cidades</SelectItem>
                   {cities.map((city: any) => (
                     <SelectItem key={city.id} value={city.nome}>
                       {city.nome}
