@@ -38,6 +38,7 @@ const Proposals: React.FC = () => {
     setLoading(true);
     try {
       const data = await getProposals();
+      console.log("Loaded proposals from Supabase:", data);
       setProposals(data);
     } catch (error) {
       console.error("Error loading proposals:", error);
@@ -63,8 +64,8 @@ const Proposals: React.FC = () => {
           p.name.toLowerCase().includes(term) ||
           p.email.toLowerCase().includes(term) ||
           p.phone.includes(term) ||
-          (p.vehicle && p.vehicle.brand.toLowerCase().includes(term)) ||
-          (p.vehicle && p.vehicle.model.toLowerCase().includes(term))
+          (p.vehicle && p.vehicle.brand && p.vehicle.brand.toLowerCase().includes(term)) ||
+          (p.vehicle && p.vehicle.model && p.vehicle.model.toLowerCase().includes(term))
       );
     }
 

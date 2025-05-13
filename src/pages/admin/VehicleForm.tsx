@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { getVehicleById, getSellers, createVehicle, updateVehicle } from "@/services/supabaseService";
 import FipeVehicleSelector from "@/components/FipeVehicleSelector";
+import LocationSelector from "@/components/LocationSelector";
 import { Vehicle, Seller } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +21,13 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency, formatMileage } from "@/lib/format";
 
 const VehicleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false);
   const isEditMode = !!id;
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [fipePrice, setFipePrice] = useState<any>(null);
@@ -48,11 +52,32 @@ const VehicleForm: React.FC = () => {
     status: "available",
   });
 
+  // Format price display
+  const [formattedPrice, setFormattedPrice] = useState('');
+  const [formattedMileage, setFormattedMileage] = useState('');
+
+  useEffect(() => {
+    if (formData.price !== undefined) {
+      setFormattedPrice(formatCurrency(formData.price).replace('R$', '').trim());
+    }
+  }, [formData.price]);
+
+  useEffect(() => {
+    if (formData.mileage !== undefined) {
+      setFormattedMileage(formatMileage(formData.mileage).replace('km', '').trim());
+    }
+  }, [formData.mileage]);
+
   // Fetch sellers
   useEffect(() => {
     const loadSellers = async () => {
-      const sellersData = await getSellers();
-      setSellers(sellersData);
+      try {
+        const sellersData = await getSellers();
+        setSellers(sellersData);
+      } catch (error) {
+        console.error("Error loading sellers:", error);
+        toast.error("Erro ao carregar vendedores");
+      }
     };
 
     loadSellers();
@@ -62,18 +87,55 @@ const VehicleForm: React.FC = () => {
   useEffect(() => {
     if (isEditMode) {
       const loadVehicle = async () => {
-        const vehicle = await getVehicleById(id || "");
-        if (vehicle) {
-          setFormData(vehicle);
-        } else {
-          toast.error("Veículo não encontrado");
+        setInitialLoading(true);
+        try {
+          const vehicle = await getVehicleById(id || "");
+          if (vehicle) {
+            setFormData(vehicle);
+            setFormattedPrice(formatCurrency(vehicle.price).replace('R$', '').trim());
+            setFormattedMileage(formatMileage(vehicle.mileage).replace('km', '').trim());
+          } else {
+            toast.error("Veículo não encontrado");
+            navigate("/admin/vehicles");
+          }
+        } catch (error) {
+          console.error("Error loading vehicle:", error);
+          toast.error("Erro ao carregar dados do veículo");
           navigate("/admin/vehicles");
+        } finally {
+          setInitialLoading(false);
         }
       };
 
       loadVehicle();
     }
   }, [id, isEditMode, navigate]);
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow only numbers and decimal separator
+    const value = e.target.value.replace(/[^\d,.]/g, '');
+    setFormattedPrice(value);
+    
+    // Convert to number for storage
+    const numValue = parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+    setFormData({
+      ...formData,
+      price: numValue
+    });
+  };
+
+  const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Allow only numbers
+    const value = e.target.value.replace(/[^\d,.]/g, '');
+    setFormattedMileage(value);
+    
+    // Convert to number for storage
+    const numValue = parseInt(value.replace(/\./g, '').replace(',', '')) || 0;
+    setFormData({
+      ...formData,
+      mileage: numValue
+    });
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -115,6 +177,26 @@ const VehicleForm: React.FC = () => {
     setFormData({
       ...formData,
       [field]: value,
+    });
+  };
+
+  const handleStateChange = (state: string) => {
+    setFormData({
+      ...formData,
+      location: {
+        ...formData.location!,
+        state
+      }
+    });
+  };
+
+  const handleCityChange = (city: string) => {
+    setFormData({
+      ...formData,
+      location: {
+        ...formData.location!,
+        city
+      }
     });
   };
 
@@ -194,6 +276,16 @@ const VehicleForm: React.FC = () => {
     }
   };
 
+  if (initialLoading) {
+    return (
+      <AdminLayout title={isEditMode ? "Carregando Veículo..." : "Novo Veículo"}>
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout title={isEditMode ? "Editar Veículo" : "Novo Veículo"}>
       <form onSubmit={handleSubmit}>
@@ -216,27 +308,32 @@ const VehicleForm: React.FC = () => {
                 <Label htmlFor="price">
                   Preço (R$) <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.price || ""}
-                  onChange={handleChange}
-                  required
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="text"
+                    className="pl-8"
+                    value={formattedPrice}
+                    onChange={handlePriceChange}
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="mileage">Quilometragem</Label>
-                <Input
-                  id="mileage"
-                  name="mileage"
-                  type="number"
-                  min="0"
-                  value={formData.mileage || ""}
-                  onChange={handleChange}
-                />
+                <div className="relative">
+                  <Input
+                    id="mileage"
+                    name="mileage"
+                    type="text"
+                    className="pr-8"
+                    value={formattedMileage}
+                    onChange={handleMileageChange}
+                  />
+                  <span className="absolute right-3 top-2.5 text-gray-500">km</span>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
@@ -315,51 +412,15 @@ const VehicleForm: React.FC = () => {
 
             <Separator />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="location.state">
-                  Estado <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={formData.location?.state || ""}
-                  onValueChange={(value) => {
-                    setFormData({
-                      ...formData,
-                      location: {
-                        ...formData.location!,
-                        state: value,
-                        city: "", // Reset city when state changes
-                      },
-                    });
-                  }}
-                >
-                  <SelectTrigger id="location.state">
-                    <SelectValue placeholder="Selecione o estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="SP">São Paulo</SelectItem>
-                    <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                    <SelectItem value="MG">Minas Gerais</SelectItem>
-                    <SelectItem value="PR">Paraná</SelectItem>
-                    <SelectItem value="SC">Santa Catarina</SelectItem>
-                    <SelectItem value="RS">Rio Grande do Sul</SelectItem>
-                    <SelectItem value="BA">Bahia</SelectItem>
-                    <SelectItem value="DF">Distrito Federal</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location.city">
-                  Cidade <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="location.city"
-                  name="location.city"
-                  value={formData.location?.city || ""}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            {/* Location Selector - IBGE API integration */}
+            <div className="grid grid-cols-1 gap-4">
+              <LocationSelector 
+                onStateChange={handleStateChange}
+                onCityChange={handleCityChange}
+                initialState={formData.location?.state}
+                initialCity={formData.location?.city}
+              />
+              
               <div className="space-y-2">
                 <Label htmlFor="location.region">Região</Label>
                 <Input

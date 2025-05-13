@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from '@/hooks/use-toast';
@@ -290,44 +289,61 @@ export const deleteSeller = async (id: string) => {
 
 // Proposal Services
 export const getProposals = async () => {
-  const { data, error } = await supabase
-    .from('proposals')
-    .select('*, vehicles!inner(*)')
-    .order('created_at', { ascending: false });
+  try {
+    console.log('Fetching proposals from Supabase...');
+    const { data, error } = await supabase
+      .from('proposals')
+      .select(`
+        *,
+        vehicle:vehicle_id (
+          id,
+          brand,
+          model,
+          year
+        )
+      `)
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching proposals:', error);
+      throw error;
+    }
     
-  if (error) {
-    console.error('Error fetching proposals:', error);
-    throw error;
+    console.log('Proposals data from Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in getProposals:', error);
+    // If Supabase query fails, return empty array
+    return [];
   }
-  
-  return data.map((proposal: any) => {
-    const { vehicles, ...proposalData } = proposal;
-    return {
-      ...proposalData,
-      vehicle_id: proposalData.vehicle_id,
-      vehicleInfo: vehicles
-    } as Proposal;
-  });
 }
 
 export const getProposalById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('proposals')
-    .select('*, vehicles!inner(*)')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('proposals')
+      .select(`
+        *,
+        vehicle:vehicle_id (
+          id,
+          brand,
+          model,
+          year
+        )
+      `)
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching proposal:', error);
+      throw error;
+    }
     
-  if (error) {
-    console.error('Error fetching proposal:', error);
+    return data;
+  } catch (error) {
+    console.error('Error in getProposalById:', error);
     throw error;
   }
-  
-  const { vehicles, ...proposalData } = data;
-  return {
-    ...proposalData,
-    vehicle_id: proposalData.vehicle_id,
-    vehicleInfo: vehicles
-  } as Proposal;
 }
 
 export const createProposal = async (proposalData: Partial<Proposal>) => {

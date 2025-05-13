@@ -1,46 +1,58 @@
 
-// Format currency (R$)
-export const formatCurrency = (value: number): string => {
+export const formatCurrency = (value: number | string | undefined) => {
+  if (value === undefined || value === null) return 'R$ 0,00';
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numValue);
 };
 
-// Format date
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('pt-BR').format(date);
-};
-
-// Format date and time
-export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('pt-BR', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric',
-    hour: '2-digit', 
-    minute: '2-digit' 
-  }).format(date);
-};
-
-// Format phone number as (XX) XXXXX-XXXX
-export const formatPhone = (phone: string): string => {
-  const cleaned = phone.replace(/\D/g, '');
+export const formatMileage = (value: number | string | undefined) => {
+  if (value === undefined || value === null) return '0 km';
   
-  if (cleaned.length === 11) {
-    return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 7)}-${cleaned.substring(7, 11)}`;
-  } else if (cleaned.length === 10) {
-    return `(${cleaned.substring(0, 2)}) ${cleaned.substring(2, 6)}-${cleaned.substring(6, 10)}`;
+  const numValue = typeof value === 'string' ? parseInt(value) : value;
+  
+  return new Intl.NumberFormat('pt-BR', {
+    maximumFractionDigits: 0
+  }).format(numValue) + ' km';
+};
+
+export const formatDate = (isoDate: string) => {
+  if (!isoDate) return '';
+  
+  try {
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return isoDate;
+  }
+};
+
+export const formatPhone = (phone: string) => {
+  if (!phone) return '';
+  
+  // Remove non-numeric characters
+  const numericPhone = phone.replace(/\D/g, '');
+  
+  // Handle different formats based on length
+  if (numericPhone.length === 11) {
+    // Format as (XX) XXXXX-XXXX (with 9 digit)
+    return `(${numericPhone.slice(0, 2)}) ${numericPhone.slice(2, 7)}-${numericPhone.slice(7)}`;
+  } else if (numericPhone.length === 10) {
+    // Format as (XX) XXXX-XXXX
+    return `(${numericPhone.slice(0, 2)}) ${numericPhone.slice(2, 6)}-${numericPhone.slice(6)}`;
   }
   
-  return phone; // return original if format doesn't match
-};
-
-// Format mileage with suffixes (0 km, 10 km, 100 km, 1.000 km, 10.000 km)
-export const formatMileage = (mileage: number): string => {
-  return `${new Intl.NumberFormat('pt-BR').format(mileage)} km`;
+  // Return original if format unknown
+  return phone;
 };

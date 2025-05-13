@@ -1,8 +1,9 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { vehicles } from "@/services/mockData";
+import { getVehicles } from "@/services/supabaseService";
+import { Vehicle } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { Plus, Edit, Trash2, Search, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,10 +38,35 @@ import {
 import { toast } from "sonner";
 
 const Vehicles: React.FC = () => {
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadVehicles();
+  }, []);
+
+  useEffect(() => {
+    filterAndSortVehicles();
+  }, [vehicles, statusFilter, searchTerm, sortField, sortDirection]);
+
+  const loadVehicles = async () => {
+    setLoading(true);
+    try {
+      const data = await getVehicles();
+      console.log("Loaded vehicles from Supabase:", data);
+      setVehicles(data);
+    } catch (error) {
+      console.error("Error loading vehicles:", error);
+      toast.error("Erro ao carregar veículos");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -51,29 +77,27 @@ const Vehicles: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    // In a real app, this would make an API call
-    toast.success(`Veículo #${id} excluído com sucesso`);
-  };
+  const filterAndSortVehicles = () => {
+    let filtered = [...vehicles];
 
-  const filteredVehicles = vehicles
-    .filter((vehicle) => {
-      // Filter by search term
-      const searchMatch = `${vehicle.brand} ${vehicle.model} ${vehicle.year}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (v) =>
+          `${v.brand} ${v.model} ${v.year}`
+            .toLowerCase()
+            .includes(term)
+      );
+    }
 
-      // Filter by status
-      const statusMatch =
-        statusFilter === "all" ||
-        (statusFilter === "available" && vehicle.status === "available") ||
-        (statusFilter === "sold" && vehicle.status === "sold") ||
-        (statusFilter === "reserved" && vehicle.status === "reserved");
+    // Filter by status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((v) => v.status === statusFilter);
+    }
 
-      return searchMatch && statusMatch;
-    })
-    .sort((a, b) => {
-      // Sort by selected field
+    // Sort
+    filtered.sort((a, b) => {
       let aValue: any = a[sortField as keyof typeof a];
       let bValue: any = b[sortField as keyof typeof b];
 
@@ -109,6 +133,21 @@ const Vehicles: React.FC = () => {
       }
     });
 
+    setFilteredVehicles(filtered);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      // In a real app, this would make an API call
+      toast.success(`Veículo #${id} excluído com sucesso`);
+      // After successful delete, reload the vehicles
+      await loadVehicles();
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
+      toast.error("Erro ao excluir veículo");
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "available":
@@ -133,6 +172,16 @@ const Vehicles: React.FC = () => {
         return <Badge>{status}</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout title="Veículos">
+        <div className="flex justify-center items-center h-64">
+          <span className="loading loading-spinner loading-lg"></span>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout title="Veículos">
