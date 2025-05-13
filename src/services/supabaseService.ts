@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from 'sonner';
@@ -207,26 +206,24 @@ export const getSellerById = async (id: string) => {
 
 export const createSeller = async (sellerData: Partial<Seller>) => {
   try {
-    // Ensure required fields are present
-    const dbSeller = {
-      id: sellerData.id || crypto.randomUUID(),
-      name: sellerData.name || '',
-      phone: sellerData.phone || '',
-      email: sellerData.email,
-      city: sellerData.city || '',
-      state: sellerData.state || '',
-    };
-    
-    const { data, error } = await supabase
+    // Generate a UUID for the id instead of using crypto.randomUUID()
+    // This ensures we have a valid UUID format expected by Supabase
+    const { data: newSeller, error } = await supabase
       .from('sellers')
-      .insert(dbSeller)
+      .insert({
+        name: sellerData.name || '',
+        phone: sellerData.phone || '',
+        email: sellerData.email,
+        city: sellerData.city || '',
+        state: sellerData.state || '',
+      })
       .select()
       .single();
       
     if (error) throw error;
     
-    toast.success(`${data.name} cadastrado com sucesso!`);
-    return data as Seller;
+    toast.success(`${newSeller.name} cadastrado com sucesso!`);
+    return newSeller as Seller;
   } catch (error: any) {
     console.error('Error creating seller:', error);
     toast.error(`Erro ao cadastrar vendedor: ${error.message || 'Tente novamente'}`);
