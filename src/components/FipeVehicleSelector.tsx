@@ -69,15 +69,24 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       try {
         const brandsData = await fetchBrands();
         console.log("Loaded brands:", brandsData);
-        setBrands(brandsData);
-        
-        // If initial brand is provided, find its ID
-        if (initialBrand) {
-          const brandObj = brandsData.find(b => b.nome === initialBrand);
-          if (brandObj) {
-            setSelectedBrandId(brandObj.id);
-            handleBrandChange(brandObj.id);
+        if (brandsData.length > 0) {
+          setBrands(brandsData);
+          
+          // If initial brand is provided, find its ID
+          if (initialBrand) {
+            const brandObj = brandsData.find(b => b.nome === initialBrand);
+            if (brandObj) {
+              setSelectedBrandId(brandObj.id);
+              // Only load models if we found a matching brand
+              loadModels(brandObj.id);
+            }
           }
+        } else {
+          toast({
+            title: "Nenhuma marca encontrada",
+            description: "Não foi possível carregar as marcas de veículos",
+            variant: "destructive"
+          });
         }
       } catch (error) {
         console.error("Error loading brands:", error);
@@ -93,37 +102,39 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     loadBrands();
   }, [initialBrand]);
 
-  const handleBrandChange = async (brandId: string) => {
-    // Reset dependent fields when brand changes
-    setSelectedBrandId(brandId);
+  // Load models when brand changes or is initialized
+  const loadModels = async (brandId: string) => {
+    if (!brandId) return;
+    
+    // Reset dependent fields
     setSelectedModelId("");
     setSelectedYearId("");
-    setModels([]);
     setYears([]);
     setFipePrice(null);
-    
-    // Find the selected brand name
-    const selectedBrand = brands.find(b => b.id === brandId);
-    if (selectedBrand) {
-      onBrandChange(selectedBrand.nome);
-    }
-    
-    // Fetch models for selected brand
-    if (!brandId) return;
     
     setLoadingModels(true);
     try {
       const modelsData = await fetchModelsByBrand(brandId);
       console.log("Loaded models:", modelsData);
-      setModels(modelsData);
       
-      // If initial model is provided, find its ID
-      if (initialModel) {
-        const modelObj = modelsData.find(m => m.nome === initialModel);
-        if (modelObj) {
-          setSelectedModelId(modelObj.id);
-          handleModelChange(modelObj.id);
+      if (modelsData.length > 0) {
+        setModels(modelsData);
+        
+        // If initial model is provided, find its ID
+        if (initialModel) {
+          const modelObj = modelsData.find(m => m.nome === initialModel);
+          if (modelObj) {
+            setSelectedModelId(modelObj.id);
+            // Only load years if we found a matching model
+            loadYears(brandId, modelObj.id);
+          }
         }
+      } else {
+        toast({
+          title: "Nenhum modelo encontrado",
+          description: "Não foi possível carregar os modelos para esta marca",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Error loading models:", error);
@@ -136,35 +147,37 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     }
   };
 
-  const handleModelChange = async (modelId: string) => {
-    // Reset dependent fields when model changes
-    setSelectedModelId(modelId);
+  // Load years when model changes or is initialized
+  const loadYears = async (brandId: string, modelId: string) => {
+    if (!brandId || !modelId) return;
+    
+    // Reset dependent fields
     setSelectedYearId("");
-    setYears([]);
     setFipePrice(null);
-    
-    // Find the selected model name
-    const selectedModel = models.find(m => m.id === modelId);
-    if (selectedModel) {
-      onModelChange(selectedModel.nome);
-    }
-    
-    // Fetch years for selected model
-    if (!selectedBrandId || !modelId) return;
     
     setLoadingYears(true);
     try {
-      const yearsData = await fetchYearsByBrandAndModel(selectedBrandId, modelId);
+      const yearsData = await fetchYearsByBrandAndModel(brandId, modelId);
       console.log("Loaded years:", yearsData);
-      setYears(yearsData);
       
-      // If initial year is provided, find its ID
-      if (initialYear) {
-        const yearObj = yearsData.find(y => y.nome.includes(initialYear.toString()));
-        if (yearObj) {
-          setSelectedYearId(yearObj.id);
-          handleYearChange(yearObj.id);
+      if (yearsData.length > 0) {
+        setYears(yearsData);
+        
+        // If initial year is provided, find its ID
+        if (initialYear) {
+          const yearObj = yearsData.find(y => y.nome.includes(initialYear.toString()));
+          if (yearObj) {
+            setSelectedYearId(yearObj.id);
+            // Only load price if we found a matching year
+            loadPrice(brandId, modelId, yearObj.id);
+          }
         }
+      } else {
+        toast({
+          title: "Nenhum ano encontrado",
+          description: "Não foi possível carregar os anos para este modelo",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Error loading years:", error);
@@ -177,29 +190,26 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     }
   };
 
-  const handleYearChange = async (yearId: string) => {
-    setSelectedYearId(yearId);
-    setFipePrice(null);
+  // Load price when year changes or is initialized
+  const loadPrice = async (brandId: string, modelId: string, yearId: string) => {
+    if (!brandId || !modelId || !yearId) return;
     
-    if (!selectedBrandId || !selectedModelId || !yearId) return;
-    
-    // Extract year from the selected yearId
-    const yearParts = yearId.split('-');
-    const year = parseInt(yearParts[0]);
-    onYearChange(year);
-    
-    // Fetch price for selected vehicle
     setLoadingPrice(true);
     try {
-      const priceData = await fetchPriceByBrandModelYear(selectedBrandId, selectedModelId, yearId);
+      const priceData = await fetchPriceByBrandModelYear(brandId, modelId, yearId);
       console.log("Loaded price:", priceData);
       
       if (priceData) {
         setFipePrice(priceData);
         onFipePriceChange(priceData);
         
+        // Extract year from the selected yearId
+        const yearParts = yearId.split('-');
+        const year = parseInt(yearParts[0]);
+        onYearChange(year);
+        
         // Set the fuel type based on the FIPE response
-        let fuelType: "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex" = "flex";
+        let fuelType = "flex";
         const fuelLower = priceData.combustivel.toLowerCase();
         
         if (fuelLower.includes("gasolina")) {
@@ -215,6 +225,12 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
         }
         
         onFuelChange(fuelType);
+      } else {
+        toast({
+          title: "Preço FIPE não encontrado",
+          description: "Não foi possível obter o valor FIPE para este veículo",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Error loading price:", error);
@@ -224,6 +240,64 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       });
     } finally {
       setLoadingPrice(false);
+    }
+  };
+
+  // Handlers for selection changes
+  const handleBrandChange = (brandId: string) => {
+    setSelectedBrandId(brandId);
+    
+    // Find the selected brand name
+    const selectedBrand = brands.find(b => b.id === brandId);
+    if (selectedBrand) {
+      onBrandChange(selectedBrand.nome);
+    }
+    
+    // Reset dependent states completely
+    setSelectedModelId("");
+    setSelectedYearId("");
+    setModels([]);
+    setYears([]);
+    setFipePrice(null);
+    onFipePriceChange(null);
+    
+    // Load models for the selected brand
+    if (brandId) {
+      loadModels(brandId);
+    }
+  };
+
+  const handleModelChange = (modelId: string) => {
+    setSelectedModelId(modelId);
+    
+    // Find the selected model name
+    const selectedModel = models.find(m => m.id === modelId);
+    if (selectedModel) {
+      onModelChange(selectedModel.nome);
+    }
+    
+    // Reset dependent states
+    setSelectedYearId("");
+    setYears([]);
+    setFipePrice(null);
+    onFipePriceChange(null);
+    
+    // Load years for the selected model
+    if (selectedBrandId && modelId) {
+      loadYears(selectedBrandId, modelId);
+    }
+  };
+
+  const handleYearChange = (yearId: string) => {
+    setSelectedYearId(yearId);
+    
+    // Reset price info
+    setFipePrice(null);
+    onFipePriceChange(null);
+    
+    // Load price for the selected year
+    if (selectedBrandId && selectedModelId && yearId) {
+      loadPrice(selectedBrandId, selectedModelId, yearId);
     }
   };
 
@@ -247,11 +321,17 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
             )}
           </SelectTrigger>
           <SelectContent>
-            {brands.map((brand) => (
-              <SelectItem key={brand.id} value={brand.id}>
-                {brand.nome}
+            {brands.length > 0 ? (
+              brands.map((brand) => (
+                <SelectItem key={brand.id} value={brand.id}>
+                  {brand.nome}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="empty" disabled>
+                Nenhuma marca encontrada
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -274,11 +354,17 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
             )}
           </SelectTrigger>
           <SelectContent>
-            {models.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.nome}
+            {models.length > 0 ? (
+              models.map((model) => (
+                <SelectItem key={model.id} value={model.id}>
+                  {model.nome}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="empty" disabled>
+                {selectedBrandId ? "Nenhum modelo encontrado" : "Selecione uma marca primeiro"}
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -301,11 +387,17 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
             )}
           </SelectTrigger>
           <SelectContent>
-            {years.map((year) => (
-              <SelectItem key={year.id} value={year.id}>
-                {year.nome}
+            {years.length > 0 ? (
+              years.map((year) => (
+                <SelectItem key={year.id} value={year.id}>
+                  {year.nome}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="empty" disabled>
+                {selectedModelId ? "Nenhum ano encontrado" : "Selecione um modelo primeiro"}
               </SelectItem>
-            ))}
+            )}
           </SelectContent>
         </Select>
       </div>

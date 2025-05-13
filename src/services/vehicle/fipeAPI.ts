@@ -23,6 +23,13 @@ export const fetchBrands = async (): Promise<VehicleBrand[]> => {
     
     const data = await response.json();
     console.log('Brands data:', data);
+    
+    // Verify data is an array before mapping
+    if (!Array.isArray(data)) {
+      console.error('Unexpected response format for brands:', data);
+      throw new Error('API returned unexpected data format for brands');
+    }
+    
     return data.map((brand: any) => ({
       id: brand.Value.toString(),
       nome: brand.Label
@@ -30,6 +37,7 @@ export const fetchBrands = async (): Promise<VehicleBrand[]> => {
   } catch (error) {
     console.error('Error fetching brands:', error);
     // Fallback to mock data if API call fails
+    console.log('Falling back to mock data for brands');
     return fetchBrandsMock();
   }
 };
@@ -60,7 +68,7 @@ export const fetchModelsByBrand = async (brandId: string): Promise<VehicleModel[
     // Check if the response has the expected structure
     if (!data.Modelos || !Array.isArray(data.Modelos)) {
       console.error('Unexpected response format for models:', data);
-      return [];
+      throw new Error('API returned unexpected data format for models');
     }
     
     return data.Modelos.map((model: any) => ({
@@ -70,6 +78,7 @@ export const fetchModelsByBrand = async (brandId: string): Promise<VehicleModel[
   } catch (error) {
     console.error('Error fetching models:', error);
     // Fallback to mock data if API call fails
+    console.log('Falling back to mock data for models');
     return fetchModelsByBrandMock(brandId);
   }
 };
@@ -101,7 +110,7 @@ export const fetchYearsByBrandAndModel = async (brandId: string, modelId: string
     // Check if the response is an array
     if (!Array.isArray(data)) {
       console.error('Unexpected response format for years:', data);
-      return [];
+      throw new Error('API returned unexpected data format for years');
     }
     
     return data.map((year: any) => ({
@@ -111,6 +120,7 @@ export const fetchYearsByBrandAndModel = async (brandId: string, modelId: string
   } catch (error) {
     console.error('Error fetching years:', error);
     // Fallback to mock data if API call fails
+    console.log('Falling back to mock data for years');
     return fetchYearsByBrandAndModelMock(brandId, modelId);
   }
 };
@@ -120,8 +130,16 @@ export const fetchPriceByBrandModelYear = async (brandId: string, modelId: strin
   try {
     console.log(`Fetching price for brand ID: ${brandId}, model ID: ${modelId}, year ID: ${yearId}...`);
     const yearParts = yearId.split('-');
+    if (yearParts.length !== 2) {
+      throw new Error(`Invalid year ID format: ${yearId}`);
+    }
+    
     const year = parseInt(yearParts[0]);
     const fuelCode = parseInt(yearParts[1]);
+    
+    if (isNaN(year) || isNaN(fuelCode)) {
+      throw new Error(`Invalid year or fuel code: ${yearId}`);
+    }
     
     const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros', {
       method: 'POST',
@@ -158,6 +176,7 @@ export const fetchPriceByBrandModelYear = async (brandId: string, modelId: strin
   } catch (error) {
     console.error('Error fetching price:', error);
     // Fallback to mock data if API call fails
+    console.log('Falling back to mock data for price');
     return fetchPriceByBrandModelYearMock(brandId, modelId, yearId);
   }
 };
