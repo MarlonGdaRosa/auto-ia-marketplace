@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from '@/hooks/use-toast';
@@ -56,17 +57,24 @@ export const getVehicles = async (filters?: any) => {
 
 export const getVehicleById = async (id: string) => {
   try {
+    console.log('Fetching vehicle by ID:', id);
     const { data, error } = await supabase
       .from('vehicles')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle(); // Use maybeSingle() to avoid errors when no results are found
       
     if (error) {
       console.error('Error fetching vehicle:', error);
       throw error;
     }
     
+    if (!data) {
+      console.log('No vehicle found with ID:', id);
+      return null;
+    }
+    
+    console.log('Vehicle data retrieved:', data);
     return data as Vehicle;
   } catch (error) {
     console.error('Error in getVehicleById:', error);

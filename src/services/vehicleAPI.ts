@@ -52,7 +52,7 @@ export const fetchBrands = async (): Promise<VehicleBrand[]> => {
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch brands');
+      throw new Error(`Failed to fetch brands: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
@@ -85,11 +85,18 @@ export const fetchModelsByBrand = async (brandId: string): Promise<VehicleModel[
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch models');
+      throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
     console.log('Models data:', data);
+    
+    // Check if the response has the expected structure
+    if (!data.Modelos || !Array.isArray(data.Modelos)) {
+      console.error('Unexpected response format for models:', data);
+      return [];
+    }
+    
     return data.Modelos.map((model: any) => ({
       id: model.Value.toString(),
       nome: model.Label,
@@ -119,11 +126,18 @@ export const fetchYearsByBrandAndModel = async (brandId: string, modelId: string
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch years');
+      throw new Error(`Failed to fetch years: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
     console.log('Years data:', data);
+    
+    // Check if the response is an array
+    if (!Array.isArray(data)) {
+      console.error('Unexpected response format for years:', data);
+      return [];
+    }
+    
     return data.map((year: any) => ({
       id: year.Value,
       nome: year.Label
@@ -139,6 +153,10 @@ export const fetchYearsByBrandAndModel = async (brandId: string, modelId: string
 export const fetchPriceByBrandModelYear = async (brandId: string, modelId: string, yearId: string): Promise<FipePrice> => {
   try {
     console.log(`Fetching price for brand ID: ${brandId}, model ID: ${modelId}, year ID: ${yearId}...`);
+    const yearParts = yearId.split('-');
+    const year = parseInt(yearParts[0]);
+    const fuelCode = parseInt(yearParts[1]);
+    
     const response = await fetch('https://veiculos.fipe.org.br/api/veiculos/ConsultarValorComTodosParametros', {
       method: 'POST',
       headers: {
@@ -149,14 +167,15 @@ export const fetchPriceByBrandModelYear = async (brandId: string, modelId: strin
         codigoTabelaReferencia: 321,
         codigoMarca: parseInt(brandId),
         codigoModelo: parseInt(modelId),
-        anoModelo: parseInt(yearId.split('-')[0]),
-        codigoTipoCombustivel: parseInt(yearId.split('-')[1]),
+        anoModelo: year,
+        codigoTipoCombustivel: fuelCode,
+        tipoVeiculo: "carro",
         tipoConsulta: "tradicional"
       }),
     });
     
     if (!response.ok) {
-      throw new Error('Failed to fetch price');
+      throw new Error(`Failed to fetch price: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();

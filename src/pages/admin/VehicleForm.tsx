@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
@@ -56,12 +55,14 @@ const VehicleForm: React.FC = () => {
   const [formattedPrice, setFormattedPrice] = useState('');
   const [formattedMileage, setFormattedMileage] = useState('');
 
+  // Update formatted price when raw price changes
   useEffect(() => {
     if (formData.price !== undefined) {
       setFormattedPrice(formatCurrency(formData.price).replace('R$', '').trim());
     }
   }, [formData.price]);
 
+  // Update formatted mileage when raw mileage changes
   useEffect(() => {
     if (formData.mileage !== undefined) {
       setFormattedMileage(formatMileage(formData.mileage).replace('km', '').trim());
@@ -243,6 +244,8 @@ const VehicleForm: React.FC = () => {
         setLoading(false);
         return;
       }
+
+      console.log("Submitting vehicle data:", formData);
 
       let result;
       if (isEditMode) {

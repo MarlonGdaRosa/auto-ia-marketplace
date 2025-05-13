@@ -68,6 +68,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       setLoadingBrands(true);
       try {
         const brandsData = await fetchBrands();
+        console.log("Loaded brands:", brandsData);
         setBrands(brandsData);
         
         // If initial brand is provided, find its ID
@@ -97,14 +98,19 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     setYears([]);
     setFipePrice(null);
     
+    // Find the selected brand name
     const selectedBrand = brands.find(b => b.id === brandId);
     if (selectedBrand) {
       onBrandChange(selectedBrand.nome);
     }
     
+    // Fetch models for selected brand
+    if (!brandId) return;
+    
     setLoadingModels(true);
     try {
       const modelsData = await fetchModelsByBrand(brandId);
+      console.log("Loaded models:", modelsData);
       setModels(modelsData);
       
       // If initial model is provided, find its ID
@@ -129,16 +135,19 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     setYears([]);
     setFipePrice(null);
     
+    // Find the selected model name
     const selectedModel = models.find(m => m.id === modelId);
     if (selectedModel) {
       onModelChange(selectedModel.nome);
     }
     
-    if (!selectedBrandId) return;
+    // Fetch years for selected model
+    if (!selectedBrandId || !modelId) return;
     
     setLoadingYears(true);
     try {
       const yearsData = await fetchYearsByBrandAndModel(selectedBrandId, modelId);
+      console.log("Loaded years:", yearsData);
       setYears(yearsData);
       
       // If initial year is provided, find its ID
@@ -161,14 +170,18 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     setSelectedYearId(yearId);
     setFipePrice(null);
     
-    if (!selectedBrandId || !selectedModelId) return;
+    if (!selectedBrandId || !selectedModelId || !yearId) return;
     
-    const year = parseInt(yearId.split('-')[0]);
+    // Extract year from the selected yearId
+    const yearParts = yearId.split('-');
+    const year = parseInt(yearParts[0]);
     onYearChange(year);
     
+    // Fetch price for selected vehicle
     setLoadingPrice(true);
     try {
       const priceData = await fetchPriceByBrandModelYear(selectedBrandId, selectedModelId, yearId);
+      console.log("Loaded price:", priceData);
       
       if (priceData) {
         setFipePrice(priceData);
