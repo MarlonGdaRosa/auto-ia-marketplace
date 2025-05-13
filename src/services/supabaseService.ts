@@ -76,9 +76,20 @@ export const getVehicleById = async (id: string) => {
 }
 
 export const createVehicle = async (vehicleData: Partial<Vehicle>) => {
-  // Convert camelCase properties to snake_case for database
+  // Ensure required fields are present with default values if needed
   const dbVehicle = {
-    ...vehicleData,
+    brand: vehicleData.brand || '',
+    model: vehicleData.model || '',
+    year: vehicleData.year || new Date().getFullYear(),
+    price: vehicleData.price || 0,
+    mileage: vehicleData.mileage || 0,
+    transmission: vehicleData.transmission || 'manual',
+    fuel: vehicleData.fuel || 'flex',
+    location: vehicleData.location || { state: '', city: '', region: '' },
+    features: vehicleData.features || [],
+    description: vehicleData.description || '',
+    images: vehicleData.images || [],
+    status: vehicleData.status || 'available',
     seller_id: vehicleData.seller_id
   };
   
@@ -100,7 +111,7 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>) => {
 }
 
 export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) => {
-  // Convert camelCase properties to snake_case for database
+  // We don't need to provide all fields when updating
   const dbVehicle = {
     ...vehicleData,
     seller_id: vehicleData.seller_id,
@@ -170,9 +181,19 @@ export const getSellerById = async (id: string) => {
 }
 
 export const createSeller = async (sellerData: Partial<Seller>) => {
+  // Ensure required fields are present
+  const dbSeller = {
+    id: sellerData.id || crypto.randomUUID(),
+    name: sellerData.name || '',
+    phone: sellerData.phone || '',
+    email: sellerData.email,
+    city: sellerData.city || '',
+    state: sellerData.state || '',
+  };
+  
   const { data, error } = await supabase
     .from('sellers')
-    .insert(sellerData)
+    .insert(dbSeller)
     .select()
     .single();
     
@@ -257,16 +278,19 @@ export const getProposalById = async (id: string) => {
 }
 
 export const createProposal = async (proposalData: Partial<Proposal>) => {
+  // Ensure required fields are present
+  const dbProposal = {
+    name: proposalData.name || '',
+    email: proposalData.email || '',
+    phone: proposalData.phone || '',
+    message: proposalData.message || '',
+    vehicle_id: proposalData.vehicle_id || '',
+    status: 'pending'
+  };
+  
   const { data, error } = await supabase
     .from('proposals')
-    .insert({
-      name: proposalData.name,
-      email: proposalData.email,
-      phone: proposalData.phone,
-      message: proposalData.message,
-      vehicle_id: proposalData.vehicle_id,
-      status: 'pending'
-    })
+    .insert(dbProposal)
     .select()
     .single();
     
