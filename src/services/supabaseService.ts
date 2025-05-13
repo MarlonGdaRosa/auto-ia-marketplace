@@ -69,18 +69,18 @@ export const getVehicles = async (filters?: FilterOptions): Promise<Vehicle[]> =
     year: item.year,
     price: item.price,
     mileage: item.mileage,
-    transmission: item.transmission,
-    fuel: item.fuel,
-    location: item.location,
+    transmission: item.transmission as "manual" | "automatic",
+    fuel: item.fuel as "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex",
+    location: item.location as { state: string; city: string; region?: string },
     features: item.features,
     description: item.description,
     images: item.images,
-    status: item.status,
+    status: item.status as "available" | "sold" | "reserved",
     sellerId: item.seller_id,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
     sellers: item.sellers
-  })) as Vehicle[];
+  }));
 };
 
 export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
@@ -105,18 +105,18 @@ export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
     year: data.year,
     price: data.price,
     mileage: data.mileage,
-    transmission: data.transmission,
-    fuel: data.fuel,
-    location: data.location,
+    transmission: data.transmission as "manual" | "automatic",
+    fuel: data.fuel as "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex",
+    location: data.location as { state: string; city: string; region?: string },
     features: data.features,
     description: data.description,
     images: data.images,
-    status: data.status,
+    status: data.status as "available" | "sold" | "reserved",
     sellerId: data.seller_id,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     sellers: data.sellers
-  } as Vehicle;
+  };
 };
 
 export const getSellers = async (): Promise<Seller[]> => {
@@ -138,7 +138,7 @@ export const getSellers = async (): Promise<Seller[]> => {
     state: item.state,
     email: item.email || '',
     createdAt: item.created_at
-  })) as Seller[];
+  }));
 };
 
 export const getSellerById = async (id: string): Promise<Seller | null> => {
@@ -164,7 +164,7 @@ export const getSellerById = async (id: string): Promise<Seller | null> => {
     state: data.state,
     email: data.email || '',
     createdAt: data.created_at
-  } as Seller;
+  };
 };
 
 export const getProposals = async (): Promise<Proposal[]> => {
@@ -193,7 +193,7 @@ export const getProposals = async (): Promise<Proposal[]> => {
     message: item.message,
     status: item.status as "pending" | "contacted" | "closed",
     createdAt: item.created_at
-  })) as Proposal[];
+  }));
 };
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
