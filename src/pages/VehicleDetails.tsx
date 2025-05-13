@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -35,9 +34,9 @@ const VehicleDetails: React.FC = () => {
   });
   
   const { data: seller, isLoading: isLoadingSeller } = useQuery({
-    queryKey: ['seller', vehicle?.sellerId],
-    queryFn: () => getSellerById(vehicle?.sellerId || ""),
-    enabled: !!vehicle?.sellerId
+    queryKey: ['seller', vehicle?.seller_id],
+    queryFn: () => getSellerById(vehicle?.seller_id || ""),
+    enabled: !!vehicle?.seller_id
   });
   
   if (isLoadingVehicle) {

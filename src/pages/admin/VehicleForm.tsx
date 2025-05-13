@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
@@ -297,8 +296,8 @@ const VehicleForm: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="seller">Vendedor</Label>
                 <Select
-                  value={formData.sellerId || ""}
-                  onValueChange={(value) => handleSelectChange("sellerId", value)}
+                  value={formData.seller_id || ""}
+                  onValueChange={(value) => handleSelectChange("seller_id", value)}
                 >
                   <SelectTrigger id="seller">
                     <SelectValue placeholder="Selecione o vendedor" />
