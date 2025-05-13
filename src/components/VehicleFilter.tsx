@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FilterOptions } from "@/types";
-import { fetchStates, fetchCitiesByState, fetchBrands, fetchModelsByBrand } from "@/services/vehicleAPI";
+import { fetchStates, fetchCitiesByState, fetchBrands, fetchModelsByBrand } from "@/services/vehicle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

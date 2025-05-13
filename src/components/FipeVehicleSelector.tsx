@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   fetchBrands, fetchModelsByBrand, fetchYearsByBrandAndModel, fetchPriceByBrandModelYear 
-} from "@/services/vehicleAPI";
+} from "@/services/vehicle";
 import { Label } from "@/components/ui/label";
 import {
   Select,

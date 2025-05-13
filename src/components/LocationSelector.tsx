@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { fetchStates, fetchCitiesByState } from "@/services/vehicleAPI";
+import { fetchStates, fetchCitiesByState } from "@/services/vehicle";
 import { Label } from "@/components/ui/label";
 import {
   Select,
