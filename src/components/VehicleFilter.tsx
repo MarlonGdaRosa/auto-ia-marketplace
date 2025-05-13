@@ -51,7 +51,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
 
   const { data: cities = [] } = useQuery({
     queryKey: ['cities', selectedState],
-    queryFn: () => fetchCitiesByState(Number(selectedState)),
+    queryFn: () => fetchCitiesByState(selectedState),
     enabled: !!selectedState
   });
 
@@ -105,7 +105,14 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     // Handle special case for state selection
     if (key === "state" && value !== filters.state) {
       newFilters.city = undefined; // Reset city when state changes
-      setSelectedState(value && value !== "all" ? states.find((s: any) => s.sigla === value)?.id : "");
+      
+      // Fix the type issue by ensuring we're setting a string
+      if (value && value !== "all") {
+        const stateId = states.find((s: any) => s.sigla === value)?.id;
+        setSelectedState(stateId ? stateId.toString() : "");
+      } else {
+        setSelectedState("");
+      }
     }
 
     // Handle special case for brand selection
