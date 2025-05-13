@@ -1,3 +1,4 @@
+
 import { Vehicle, Seller, Proposal, DashboardStats } from "@/types";
 
 // Mock vehicles
@@ -23,9 +24,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "available",
-    createdAt: "2023-04-15T10:30:00Z",
-    updatedAt: "2023-04-15T10:30:00Z",
-    sellerId: "1"
+    created_at: "2023-04-15T10:30:00Z",
+    updated_at: "2023-04-15T10:30:00Z",
+    seller_id: "1"
   },
   {
     id: "2",
@@ -47,9 +48,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1590080962330-747c6aba8035?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "available",
-    createdAt: "2023-05-20T14:45:00Z",
-    updatedAt: "2023-05-20T14:45:00Z",
-    sellerId: "2"
+    created_at: "2023-05-20T14:45:00Z",
+    updated_at: "2023-05-20T14:45:00Z",
+    seller_id: "2"
   },
   {
     id: "3",
@@ -71,9 +72,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "available",
-    createdAt: "2023-06-05T09:15:00Z",
-    updatedAt: "2023-06-05T09:15:00Z",
-    sellerId: "3"
+    created_at: "2023-06-05T09:15:00Z",
+    updated_at: "2023-06-05T09:15:00Z",
+    seller_id: "3"
   },
   {
     id: "4",
@@ -95,9 +96,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "available",
-    createdAt: "2023-03-12T11:20:00Z",
-    updatedAt: "2023-03-12T11:20:00Z",
-    sellerId: "4"
+    created_at: "2023-03-12T11:20:00Z",
+    updated_at: "2023-03-12T11:20:00Z",
+    seller_id: "4"
   },
   {
     id: "5",
@@ -119,9 +120,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1590080962330-747c6aba8035?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "sold",
-    createdAt: "2023-02-28T15:40:00Z",
-    updatedAt: "2023-07-10T09:30:00Z",
-    sellerId: "1"
+    created_at: "2023-02-28T15:40:00Z",
+    updated_at: "2023-07-10T09:30:00Z",
+    seller_id: "1"
   },
   {
     id: "6",
@@ -143,9 +144,9 @@ export const vehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000",
     ],
     status: "reserved",
-    createdAt: "2023-04-02T13:15:00Z",
-    updatedAt: "2023-08-15T16:20:00Z",
-    sellerId: "2"
+    created_at: "2023-04-02T13:15:00Z",
+    updated_at: "2023-08-15T16:20:00Z",
+    seller_id: "2"
   }
 ];
 
@@ -158,7 +159,7 @@ export const sellers: Seller[] = [
     city: "São Paulo",
     state: "SP",
     email: "carlos@example.com",
-    createdAt: "2023-01-15T10:00:00Z"
+    created_at: "2023-01-15T10:00:00Z"
   },
   {
     id: "2",
@@ -167,7 +168,7 @@ export const sellers: Seller[] = [
     city: "Rio de Janeiro",
     state: "RJ",
     email: "ana@example.com",
-    createdAt: "2023-02-20T14:30:00Z"
+    created_at: "2023-02-20T14:30:00Z"
   },
   {
     id: "3",
@@ -176,7 +177,7 @@ export const sellers: Seller[] = [
     city: "Belo Horizonte",
     state: "MG",
     email: "roberto@example.com",
-    createdAt: "2023-03-10T09:45:00Z"
+    created_at: "2023-03-10T09:45:00Z"
   },
   {
     id: "4",
@@ -185,7 +186,7 @@ export const sellers: Seller[] = [
     city: "Campinas",
     state: "SP",
     email: "fernanda@example.com",
-    createdAt: "2023-04-05T11:20:00Z"
+    created_at: "2023-04-05T11:20:00Z"
   }
 ];
 
@@ -193,8 +194,9 @@ export const sellers: Seller[] = [
 export const proposals: Proposal[] = [
   {
     id: "1",
-    vehicleId: "1",
-    vehicleInfo: {
+    vehicle_id: "1",
+    vehicle: {
+      id: "1",
       brand: "Toyota",
       model: "Corolla",
       year: 2022
@@ -204,12 +206,13 @@ export const proposals: Proposal[] = [
     phone: "11987654321",
     message: "Olá, tenho interesse no Toyota Corolla 2022. Gostaria de agendar uma visita para ver o veículo.",
     status: "pending",
-    createdAt: "2023-08-10T14:30:00Z"
+    created_at: "2023-08-10T14:30:00Z"
   },
   {
     id: "2",
-    vehicleId: "2",
-    vehicleInfo: {
+    vehicle_id: "2",
+    vehicle: {
+      id: "2",
       brand: "Honda",
       model: "Civic",
       year: 2021
@@ -219,12 +222,13 @@ export const proposals: Proposal[] = [
     phone: "21987654321",
     message: "Olá, gostaria de saber se o preço do Honda Civic 2021 é negociável. Tenho interesse.",
     status: "contacted",
-    createdAt: "2023-08-12T10:15:00Z"
+    created_at: "2023-08-12T10:15:00Z"
   },
   {
     id: "3",
-    vehicleId: "3",
-    vehicleInfo: {
+    vehicle_id: "3",
+    vehicle: {
+      id: "3",
       brand: "Volkswagen",
       model: "Gol",
       year: 2020
@@ -234,12 +238,13 @@ export const proposals: Proposal[] = [
     phone: "31987654321",
     message: "Tenho interesse no Volkswagen Gol 2020. O carro está com todas as revisões em dia?",
     status: "pending",
-    createdAt: "2023-08-15T16:45:00Z"
+    created_at: "2023-08-15T16:45:00Z"
   },
   {
     id: "4",
-    vehicleId: "4",
-    vehicleInfo: {
+    vehicle_id: "4",
+    vehicle: {
+      id: "4",
       brand: "Fiat",
       model: "Strada",
       year: 2021
@@ -249,7 +254,7 @@ export const proposals: Proposal[] = [
     phone: "11987654322",
     message: "Olá, gostaria de fazer uma proposta para o Fiat Strada 2021. Vocês aceitam financiamento?",
     status: "closed",
-    createdAt: "2023-08-18T09:30:00Z"
+    created_at: "2023-08-18T09:30:00Z"
   }
 ];
 

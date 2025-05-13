@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import AdminLayout from "@/components/AdminLayout";
 import { sellers } from "@/services/mockData";
@@ -223,7 +222,7 @@ const Sellers: React.FC = () => {
                         {seller.city}, {seller.state}
                       </p>
                       <p className="text-gray-500 text-xs">
-                        Desde {formatDate(seller.createdAt)}
+                        Desde {formatDate(seller.created_at || '')}
                       </p>
                     </div>
                   </div>

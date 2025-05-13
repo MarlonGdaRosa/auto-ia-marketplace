@@ -15,7 +15,11 @@ export const getVehicles = async (): Promise<Vehicle[]> => {
       return [];
     }
 
-    return data as Vehicle[];
+    // Transform data to match the Vehicle interface
+    return data.map(vehicle => ({
+      ...vehicle,
+      location: vehicle.location as unknown as { state: string; city: string; region: string }
+    })) as Vehicle[];
   } catch (error) {
     console.error("Error in getVehicles:", error);
     return [];
@@ -35,18 +39,39 @@ export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
       return null;
     }
 
-    return data as Vehicle;
+    // Transform data to match the Vehicle interface
+    return {
+      ...data,
+      location: data.location as unknown as { state: string; city: string; region: string }
+    } as Vehicle;
   } catch (error) {
     console.error("Error in getVehicleById:", error);
     return null;
   }
 };
 
-export const createVehicle = async (vehicle: Partial<Vehicle>): Promise<Vehicle | null> => {
+export const createVehicle = async (vehicleData: Partial<Vehicle>): Promise<Vehicle | null> => {
   try {
+    // Transform the vehicle data to match the database schema
+    const dbVehicle = {
+      brand: vehicleData.brand || '',
+      model: vehicleData.model || '',
+      year: vehicleData.year || 0,
+      price: vehicleData.price || 0,
+      mileage: vehicleData.mileage || 0,
+      transmission: vehicleData.transmission || '',
+      fuel: vehicleData.fuel || '',
+      location: vehicleData.location || { state: '', city: '', region: '' },
+      features: vehicleData.features || [],
+      description: vehicleData.description || '',
+      images: vehicleData.images || [],
+      status: vehicleData.status || 'available',
+      seller_id: vehicleData.seller_id
+    };
+
     const { data, error } = await supabase
       .from("vehicles")
-      .insert(vehicle)
+      .insert(dbVehicle)
       .select()
       .single();
 
@@ -55,18 +80,22 @@ export const createVehicle = async (vehicle: Partial<Vehicle>): Promise<Vehicle 
       return null;
     }
 
-    return data as Vehicle;
+    // Transform response to match the Vehicle interface
+    return {
+      ...data,
+      location: data.location as unknown as { state: string; city: string; region: string }
+    } as Vehicle;
   } catch (error) {
     console.error("Error in createVehicle:", error);
     return null;
   }
 };
 
-export const updateVehicle = async (id: string, vehicle: Partial<Vehicle>): Promise<Vehicle | null> => {
+export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>): Promise<Vehicle | null> => {
   try {
     const { data, error } = await supabase
       .from("vehicles")
-      .update(vehicle)
+      .update(vehicleData)
       .eq("id", id)
       .select()
       .single();
@@ -76,7 +105,11 @@ export const updateVehicle = async (id: string, vehicle: Partial<Vehicle>): Prom
       return null;
     }
 
-    return data as Vehicle;
+    // Transform response to match the Vehicle interface
+    return {
+      ...data,
+      location: data.location as unknown as { state: string; city: string; region: string }
+    } as Vehicle;
   } catch (error) {
     console.error("Error in updateVehicle:", error);
     return null;
@@ -155,7 +188,11 @@ export const getProposals = async (): Promise<Proposal[]> => {
       return [];
     }
 
-    return data as Proposal[];
+    // Transform data to match the Proposal interface
+    return data.map(proposal => ({
+      ...proposal,
+      vehicle: proposal.vehicle
+    })) as Proposal[];
   } catch (error) {
     console.error("Error in getProposals:", error);
     return [];
@@ -260,13 +297,13 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     });
 
     return {
-      totalVehicles,
-      soldVehicles,
-      reservedVehicles,
-      totalProposals,
-      pendingProposals,
-      contactedProposals,
-      closedProposals,
+      totalVehicles: totalVehicles,
+      soldVehicles: soldVehicles,
+      reservedVehicles: reservedVehicles,
+      totalProposals: totalProposals,
+      pendingProposals: pendingProposals,
+      contactedProposals: contactedProposals,
+      closedProposals: closedProposals,
       topBrand: {
         name: topBrandName,
         count: topBrandCount

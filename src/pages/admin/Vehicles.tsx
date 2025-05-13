@@ -39,7 +39,7 @@ import { toast } from "sonner";
 const Vehicles: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortField, setSortField] = useState<string>("createdAt");
+  const [sortField, setSortField] = useState<string>("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const handleSort = (field: string) => {
@@ -97,9 +97,9 @@ const Vehicles: React.FC = () => {
         bValue = b.location.city.toLowerCase();
       }
 
-      if (sortField === "createdAt") {
-        aValue = new Date(a.createdAt);
-        bValue = new Date(b.createdAt);
+      if (sortField === "created_at") {
+        aValue = new Date(a.created_at || '');
+        bValue = new Date(b.created_at || '');
       }
 
       if (sortDirection === "asc") {

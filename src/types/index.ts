@@ -1,3 +1,4 @@
+
 export interface Vehicle {
   id: string;
   brand: string;
@@ -16,7 +17,7 @@ export interface Vehicle {
   description: string;
   images: string[];
   status: string;
-  sellerId?: string;
+  seller_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -61,4 +62,20 @@ export interface DashboardStats {
     count: number;
   };
   newProposals: number;
+}
+
+// Adding the missing FilterOptions interface
+export interface FilterOptions {
+  brand?: string;
+  model?: string;
+  state?: string;
+  city?: string;
+  region?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  transmission?: string;
+  fuel?: string[];
+  search?: string;
 }
