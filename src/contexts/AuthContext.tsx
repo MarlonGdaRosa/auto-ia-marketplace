@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -72,7 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setTimeout(() => {
                 fetchUserProfile(newSession.user.id);
               }, 0);
-            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+            } else if (event === 'SIGNED_OUT') {
+              // Fix: Using 'SIGNED_OUT' instead of 'USER_DELETED'
               setUser(null);
               setIsLoading(false);
               // Redirect to home page or login page when signed out
