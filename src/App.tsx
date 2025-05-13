@@ -50,8 +50,8 @@ const App = () => (
             <Route path="/admin/vehicles" element={<RouteGuard requireAdmin={false}><AdminVehicles /></RouteGuard>} />
             <Route path="/admin/vehicles/new" element={<RouteGuard requireAdmin={true}><AdminVehicleForm /></RouteGuard>} />
             <Route path="/admin/vehicles/edit/:id" element={<RouteGuard requireAdmin={true}><AdminVehicleForm /></RouteGuard>} />
-            <Route path="/admin/sellers" element={<RouteGuard requireAdmin={true}><AdminSellers /></RouteGuard>} />
-            <Route path="/admin/proposals" element={<RouteGuard requireAdmin={true}><AdminProposals /></RouteGuard>} />
+            <Route path="/admin/sellers" element={<RouteGuard requireAdmin={false}><AdminSellers /></RouteGuard>} />
+            <Route path="/admin/proposals" element={<RouteGuard requireAdmin={false}><AdminProposals /></RouteGuard>} />
             
             {/* Not found */}
             <Route path="*" element={<NotFound />} />
