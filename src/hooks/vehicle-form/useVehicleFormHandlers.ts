@@ -1,3 +1,4 @@
+
 import { Vehicle } from "@/types";
 
 export const useVehicleFormHandlers = (
@@ -18,7 +19,7 @@ export const useVehicleFormHandlers = (
     let numValue = 0;
     
     if (value) {
-      // Remove all non-numeric characters
+      // Remove all non-numeric characters including dots (thousand separators)
       const cleanValue = value.replace(/[^\d]/g, '');
       
       // Parse as integer

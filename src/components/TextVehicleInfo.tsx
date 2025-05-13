@@ -64,12 +64,10 @@ const TextVehicleInfo: React.FC<TextVehicleInfoProps> = ({
         <Input
           id="year"
           name="year"
-          type="number"
+          type="text"
           value={initialYear || new Date().getFullYear()}
           onChange={handleYearChange}
           placeholder="Ex: 2023"
-          min={1900}
-          max={new Date().getFullYear() + 1}
           required
         />
       </div>
