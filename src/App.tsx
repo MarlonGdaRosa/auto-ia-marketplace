@@ -20,8 +20,17 @@ import AdminProposals from "./pages/admin/Proposals";
 
 // Auth provider
 import { AuthProvider } from "./contexts/AuthContext";
+import RouteGuard from "./components/RouteGuard";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -29,7 +38,7 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
+          <Sonner closeButton position="top-right" />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -37,12 +46,12 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/vehicles" element={<AdminVehicles />} />
-            <Route path="/admin/vehicles/new" element={<AdminVehicleForm />} />
-            <Route path="/admin/vehicles/edit/:id" element={<AdminVehicleForm />} />
-            <Route path="/admin/sellers" element={<AdminSellers />} />
-            <Route path="/admin/proposals" element={<AdminProposals />} />
+            <Route path="/admin/dashboard" element={<RouteGuard><AdminDashboard /></RouteGuard>} />
+            <Route path="/admin/vehicles" element={<RouteGuard><AdminVehicles /></RouteGuard>} />
+            <Route path="/admin/vehicles/new" element={<RouteGuard><AdminVehicleForm /></RouteGuard>} />
+            <Route path="/admin/vehicles/edit/:id" element={<RouteGuard><AdminVehicleForm /></RouteGuard>} />
+            <Route path="/admin/sellers" element={<RouteGuard><AdminSellers /></RouteGuard>} />
+            <Route path="/admin/proposals" element={<RouteGuard><AdminProposals /></RouteGuard>} />
             
             {/* Not found */}
             <Route path="*" element={<NotFound />} />

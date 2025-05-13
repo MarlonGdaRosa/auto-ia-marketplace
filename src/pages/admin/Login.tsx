@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
@@ -36,6 +37,14 @@ const formSchema = z.object({
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const { session } = useAuth();
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (session) {
+      navigate('/admin/dashboard');
+    }
+  }, [session, navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,8 +61,13 @@ const Login: React.FC = () => {
       // Clean up existing auth state
       cleanupAuthState();
       
-      // Sign out
-      await supabase.auth.signOut({ scope: 'global' });
+      // Sign out from any existing session
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutErr) {
+        console.error("Error during sign out:", signOutErr);
+        // Continue with login attempt even if sign out fails
+      }
       
       // Sign in with email/password
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -72,6 +86,14 @@ const Login: React.FC = () => {
       
       if (profileError) {
         console.error("Error fetching user profile:", profileError);
+        toast.error("Erro ao carregar perfil do usuário");
+        return;
+      }
+      
+      if (profile?.role !== 'admin') {
+        toast.error("Acesso restrito apenas para administradores");
+        await supabase.auth.signOut();
+        return;
       }
       
       // Success message and redirect

@@ -9,6 +9,7 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Create a single instance of the Supabase client to use throughout the application
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     persistSession: true,
@@ -19,8 +20,11 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 
 // Helper to clean up auth state to prevent login issues
 export const cleanupAuthState = () => {
+  console.log('Cleaning up auth state');
+  
   // Remove standard auth tokens
   localStorage.removeItem('supabase.auth.token');
+  sessionStorage?.removeItem('supabase.auth.token');
   
   // Remove all Supabase auth keys
   Object.keys(localStorage).forEach((key) => {
@@ -28,4 +32,13 @@ export const cleanupAuthState = () => {
       localStorage.removeItem(key);
     }
   });
+  
+  // Also clean sessionStorage if it exists
+  if (typeof sessionStorage !== 'undefined') {
+    Object.keys(sessionStorage).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  }
 };
