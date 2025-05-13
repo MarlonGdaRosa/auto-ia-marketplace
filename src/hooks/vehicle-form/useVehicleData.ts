@@ -19,8 +19,10 @@ export const useVehicleData = (id: string | undefined) => {
     
     setInitialLoading(true);
     try {
+      console.log('Fetching vehicle by ID:', id);
       const vehicle = await getVehicleById(id || "");
       if (vehicle) {
+        console.log('Vehicle data retrieved:', vehicle);
         setFormData(vehicle);
       } else {
         toast({

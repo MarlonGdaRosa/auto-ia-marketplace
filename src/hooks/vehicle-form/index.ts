@@ -7,6 +7,7 @@ import { useVehicleData } from "./useVehicleData";
 import { Vehicle } from "@/types";
 
 export const useVehicleForm = (id?: string, initialData?: Partial<Vehicle>) => {
+  // We don't use useVehicleData here anymore to avoid circular dependencies
   const isEditMode = !!id;
   
   const { formData, setFormData } = useVehicleFormState(initialData);

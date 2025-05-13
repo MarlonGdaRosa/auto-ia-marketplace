@@ -19,10 +19,10 @@ import { useVehicleData } from "@/hooks/vehicle-form/useVehicleData";
 const VehicleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
-  // Get vehicle data hook
+  // Important: Get vehicle data hook first
   const { initialLoading, sellers, isEditMode, fetchVehicleData } = useVehicleData(id);
   
-  // Get vehicle form hook
+  // Get vehicle form hook next
   const {
     formData,
     loading,
@@ -58,7 +58,7 @@ const VehicleForm: React.FC = () => {
     <AdminLayout title={isEditMode ? "Editar Veículo" : "Novo Veículo"}>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6">
-          {/* Text Vehicle Info (replacing FIPE selector) */}
+          {/* Text Vehicle Info */}
           <TextVehicleInfo 
             onBrandChange={(brand) => setFormData({...formData, brand})}
             onModelChange={(model) => setFormData({...formData, model})}
