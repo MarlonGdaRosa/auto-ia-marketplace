@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from 'sonner';
-import { crypto } from 'crypto';
+import crypto from 'crypto';
 
 // Vehicle Services
 export const getVehicles = async (filters?: any) => {
