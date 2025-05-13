@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -23,8 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/auth";
+import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
@@ -36,7 +36,7 @@ const formSchema = z.object({
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { session } = useAuth();
+  const { session, login } = useAuth();
   
   // Redirect if already logged in
   useEffect(() => {
@@ -57,51 +57,10 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Clean up existing auth state
-      cleanupAuthState();
-      
-      // Sign out from any existing session
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (signOutErr) {
-        console.error("Error during sign out:", signOutErr);
-        // Continue with login attempt even if sign out fails
-      }
-      
-      // Sign in with email/password
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-      
-      if (error) throw error;
-      
-      // Check if user profile exists and has admin role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single();
-      
-      if (profileError) {
-        console.error("Error fetching user profile:", profileError);
-        toast.error("Erro ao carregar perfil do usuário");
-        return;
-      }
-      
-      if (profile?.role !== 'admin') {
-        toast.error("Acesso restrito apenas para administradores");
-        await supabase.auth.signOut();
-        return;
-      }
-      
-      // Success message and redirect
-      toast.success("Login realizado com sucesso");
-      navigate('/admin/dashboard');
+      await login(values.email, values.password);
+      // The navigation is handled in the login method and by the session effect above
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error(error.message || "Erro ao fazer login. Verifique suas credenciais.");
-    } finally {
+      // Error is already handled in the login method
       setIsLoading(false);
     }
   };
