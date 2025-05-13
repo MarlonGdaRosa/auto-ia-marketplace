@@ -35,7 +35,7 @@ export const fetchBrands = async (): Promise<VehicleBrand[]> => {
       },
       body: JSON.stringify({
         codigoTipoVeiculo: 1, // 1 for cars
-        codigoTabelaReferencia: 321, // This might need updating periodically
+        codigoTabelaReferencia: 321, // Reference table
       }),
     });
     

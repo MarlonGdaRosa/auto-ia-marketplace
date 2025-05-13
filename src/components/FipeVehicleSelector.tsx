@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  fetchBrands, fetchModelsByBrand, fetchYearsByBrandAndModel, fetchPriceByBrandModelYear,
-  fetchBrandsMock, fetchModelsByBrandMock, fetchYearsByBrandAndModelMock, fetchPriceByBrandModelYearMock 
+  fetchBrands, fetchModelsByBrand, fetchYearsByBrandAndModel, fetchPriceByBrandModelYear 
 } from "@/services/vehicleAPI";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface FipePrice {
   preco: string;
@@ -67,7 +67,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     const loadBrands = async () => {
       setLoadingBrands(true);
       try {
-        const brandsData = await fetchBrands().catch(() => fetchBrandsMock());
+        const brandsData = await fetchBrands();
         setBrands(brandsData);
         
         // If initial brand is provided, find its ID
@@ -104,7 +104,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     
     setLoadingModels(true);
     try {
-      const modelsData = await fetchModelsByBrand(brandId).catch(() => fetchModelsByBrandMock(brandId));
+      const modelsData = await fetchModelsByBrand(brandId);
       setModels(modelsData);
       
       // If initial model is provided, find its ID
@@ -138,8 +138,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     
     setLoadingYears(true);
     try {
-      const yearsData = await fetchYearsByBrandAndModel(selectedBrandId, modelId)
-        .catch(() => fetchYearsByBrandAndModelMock(selectedBrandId, modelId));
+      const yearsData = await fetchYearsByBrandAndModel(selectedBrandId, modelId);
       setYears(yearsData);
       
       // If initial year is provided, find its ID
@@ -169,8 +168,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
     
     setLoadingPrice(true);
     try {
-      const priceData = await fetchPriceByBrandModelYear(selectedBrandId, selectedModelId, yearId)
-        .catch(() => fetchPriceByBrandModelYearMock(selectedBrandId, selectedModelId, yearId));
+      const priceData = await fetchPriceByBrandModelYear(selectedBrandId, selectedModelId, yearId);
       
       if (priceData) {
         setFipePrice(priceData);
@@ -213,8 +211,13 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
           onValueChange={handleBrandChange}
           disabled={loadingBrands}
         >
-          <SelectTrigger id="brand">
-            <SelectValue placeholder={loadingBrands ? "Carregando..." : "Selecione a marca"} />
+          <SelectTrigger id="brand" className="relative">
+            <SelectValue placeholder="Selecione a marca" />
+            {loadingBrands && (
+              <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </SelectTrigger>
           <SelectContent>
             {brands.map((brand) => (
@@ -235,8 +238,13 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
           onValueChange={handleModelChange}
           disabled={loadingModels || models.length === 0}
         >
-          <SelectTrigger id="model">
-            <SelectValue placeholder={loadingModels ? "Carregando..." : "Selecione o modelo"} />
+          <SelectTrigger id="model" className="relative">
+            <SelectValue placeholder={selectedBrandId ? "Selecione o modelo" : "Selecione a marca primeiro"} />
+            {loadingModels && (
+              <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </SelectTrigger>
           <SelectContent>
             {models.map((model) => (
@@ -257,8 +265,13 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
           onValueChange={handleYearChange}
           disabled={loadingYears || years.length === 0}
         >
-          <SelectTrigger id="year">
-            <SelectValue placeholder={loadingYears ? "Carregando..." : "Selecione o ano"} />
+          <SelectTrigger id="year" className="relative">
+            <SelectValue placeholder={selectedModelId ? "Selecione o ano" : "Selecione o modelo primeiro"} />
+            {loadingYears && (
+              <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </SelectTrigger>
           <SelectContent>
             {years.map((year) => (
@@ -269,6 +282,13 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
           </SelectContent>
         </Select>
       </div>
+      
+      {loadingPrice && (
+        <div className="col-span-1 md:col-span-3 flex items-center justify-center p-4">
+          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+          <span>Consultando tabela FIPE...</span>
+        </div>
+      )}
       
       {fipePrice && (
         <div className="col-span-1 md:col-span-3 space-y-2 bg-muted p-3 rounded-md">

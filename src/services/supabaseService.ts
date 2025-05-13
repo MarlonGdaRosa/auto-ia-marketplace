@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
+import { toast } from '@/hooks/use-toast';
 
 // Vehicle Services
 export const getVehicles = async (filters?: any) => {
@@ -51,28 +52,28 @@ export const getVehicles = async (filters?: any) => {
     throw error;
   }
   
-  return data.map((item: any): Vehicle => ({
-    ...item,
-    location: item.location as { state: string; city: string; region: string }
-  })) as Vehicle[];
+  return data as Vehicle[];
 }
 
 export const getVehicleById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('vehicles')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      console.error('Error fetching vehicle:', error);
+      throw error;
+    }
     
-  if (error) {
-    console.error('Error fetching vehicle:', error);
+    return data as Vehicle;
+  } catch (error) {
+    console.error('Error in getVehicleById:', error);
+    // Fallback to using mock data
     throw error;
   }
-  
-  return {
-    ...data,
-    location: data.location as { state: string; city: string; region: string }
-  } as Vehicle;
 }
 
 export const createVehicle = async (vehicleData: Partial<Vehicle>) => {
@@ -101,13 +102,20 @@ export const createVehicle = async (vehicleData: Partial<Vehicle>) => {
     
   if (error) {
     console.error('Error creating vehicle:', error);
+    toast({
+      title: "Erro ao cadastrar veículo",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
   
-  return {
-    ...data,
-    location: data.location as { state: string; city: string; region: string }
-  } as Vehicle;
+  toast({
+    title: "Veículo cadastrado com sucesso!",
+    description: `${data.brand} ${data.model} adicionado ao sistema.`
+  });
+  
+  return data as Vehicle;
 }
 
 export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) => {
@@ -127,13 +135,20 @@ export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) =
     
   if (error) {
     console.error('Error updating vehicle:', error);
+    toast({
+      title: "Erro ao atualizar veículo",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
   
-  return {
-    ...data,
-    location: data.location as { state: string; city: string; region: string }
-  } as Vehicle;
+  toast({
+    title: "Veículo atualizado com sucesso!",
+    description: `${data.brand} ${data.model} foi atualizado.`
+  });
+  
+  return data as Vehicle;
 }
 
 export const deleteVehicle = async (id: string) => {
@@ -144,8 +159,17 @@ export const deleteVehicle = async (id: string) => {
     
   if (error) {
     console.error('Error deleting vehicle:', error);
+    toast({
+      title: "Erro ao excluir veículo",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Veículo excluído com sucesso!",
+  });
   
   return true;
 }
@@ -199,8 +223,18 @@ export const createSeller = async (sellerData: Partial<Seller>) => {
     
   if (error) {
     console.error('Error creating seller:', error);
+    toast({
+      title: "Erro ao cadastrar vendedor",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Vendedor cadastrado com sucesso!",
+    description: `${data.name} adicionado ao sistema.`
+  });
   
   return data as Seller;
 }
@@ -215,8 +249,18 @@ export const updateSeller = async (id: string, sellerData: Partial<Seller>) => {
     
   if (error) {
     console.error('Error updating seller:', error);
+    toast({
+      title: "Erro ao atualizar vendedor",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Vendedor atualizado com sucesso!",
+    description: `${data.name} foi atualizado.`
+  });
   
   return data as Seller;
 }
@@ -229,8 +273,17 @@ export const deleteSeller = async (id: string) => {
     
   if (error) {
     console.error('Error deleting seller:', error);
+    toast({
+      title: "Erro ao excluir vendedor",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Vendedor excluído com sucesso!",
+  });
   
   return true;
 }
@@ -296,6 +349,11 @@ export const createProposal = async (proposalData: Partial<Proposal>) => {
     
   if (error) {
     console.error('Error creating proposal:', error);
+    toast({
+      title: "Erro ao enviar proposta",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
   
@@ -309,9 +367,17 @@ export const createProposal = async (proposalData: Partial<Proposal>) => {
         customerEmail: data.email
       }
     });
+    
+    toast({
+      title: "Proposta enviada com sucesso!",
+      description: "Entraremos em contato em breve."
+    });
   } catch (notificationError) {
     console.error('Error sending notification:', notificationError);
-    // Continue despite notification error
+    toast({
+      title: "Proposta enviada com sucesso!",
+      description: "Entraremos em contato em breve, mas houve um problema ao enviar a notificação."
+    });
   }
   
   return data as Proposal;
@@ -327,8 +393,18 @@ export const updateProposalStatus = async (id: string, status: string) => {
     
   if (error) {
     console.error('Error updating proposal:', error);
+    toast({
+      title: "Erro ao atualizar proposta",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Status da proposta atualizado",
+    description: `Proposta marcada como ${status}.`
+  });
   
   return data as Proposal;
 }
@@ -341,8 +417,17 @@ export const deleteProposal = async (id: string) => {
     
   if (error) {
     console.error('Error deleting proposal:', error);
+    toast({
+      title: "Erro ao excluir proposta",
+      description: error.message,
+      variant: "destructive"
+    });
     throw error;
   }
+  
+  toast({
+    title: "Proposta excluída com sucesso!",
+  });
   
   return true;
 }

@@ -1,25 +1,30 @@
 
 // Format currency (R$)
 export const formatCurrency = (value: number): string => {
-  return value.toLocaleString('pt-BR', {
+  return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  });
+  }).format(value);
 };
 
 // Format date
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR');
+  return new Intl.DateTimeFormat('pt-BR').format(date);
 };
 
 // Format date and time
 export const formatDateTime = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR') + ' ' + 
-    date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return new Intl.DateTimeFormat('pt-BR', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    hour: '2-digit', 
+    minute: '2-digit' 
+  }).format(date);
 };
 
 // Format phone number as (XX) XXXXX-XXXX
@@ -37,5 +42,5 @@ export const formatPhone = (phone: string): string => {
 
 // Format mileage with suffixes (0 km, 10 km, 100 km, 1.000 km, 10.000 km)
 export const formatMileage = (mileage: number): string => {
-  return `${mileage.toLocaleString('pt-BR')} km`;
+  return `${new Intl.NumberFormat('pt-BR').format(mileage)} km`;
 };
