@@ -257,6 +257,12 @@ export const proposals: Proposal[] = [
 // Mock dashboard stats
 export const dashboardStats: DashboardStats = {
   totalVehicles: vehicles.length,
+  soldVehicles: vehicles.filter(v => v.status === "sold").length,
+  reservedVehicles: vehicles.filter(v => v.status === "reserved").length,
+  totalProposals: proposals.length,
+  pendingProposals: proposals.filter(p => p.status === "pending").length,
+  contactedProposals: proposals.filter(p => p.status === "contacted").length,
+  closedProposals: proposals.filter(p => p.status === "closed").length,
   totalSold: vehicles.filter(v => v.status === "sold").length,
   topBrand: {
     name: "Toyota",
