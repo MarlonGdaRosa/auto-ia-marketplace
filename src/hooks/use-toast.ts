@@ -1,9 +1,9 @@
 
 import * as React from "react";
-import { sonner, toast as sonnerToast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
 const TOAST_LIMIT = 5;
-export type ToastActionElement = React.ReactElement<typeof sonner>;
+export type ToastActionElement = React.ReactElement<any>;
 
 type ToasterToast = {
   id: string;
