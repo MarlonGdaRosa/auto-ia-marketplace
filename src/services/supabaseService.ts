@@ -2,43 +2,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Vehicle, Seller, Proposal, DashboardStats } from "@/types";
 
-export const getVehicles = async (filters?: any): Promise<Vehicle[]> => {
+// Vehicle services
+export const getVehicles = async (): Promise<Vehicle[]> => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from("vehicles")
-      .select("*, sellers(name, phone)");
-
-    if (filters?.brand) {
-      query = query.eq("brand", filters.brand);
-    }
-
-    // Add more filters as needed
-
-    const { data, error } = await query;
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching vehicles:", error);
-      throw error;
+      return [];
     }
 
-    return data.map((item: any) => ({
-      id: item.id,
-      brand: item.brand,
-      model: item.model,
-      year: item.year,
-      price: item.price,
-      mileage: item.mileage,
-      transmission: item.transmission as "manual" | "automatic",
-      fuel: item.fuel as "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex",
-      location: item.location as { state: string; city: string; region?: string },
-      features: item.features,
-      description: item.description,
-      images: item.images,
-      status: item.status as "available" | "sold" | "reserved",
-      sellerId: item.seller_id,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at
-    }));
+    return data as Vehicle[];
   } catch (error) {
     console.error("Error in getVehicles:", error);
     return [];
@@ -49,61 +26,96 @@ export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
   try {
     const { data, error } = await supabase
       .from("vehicles")
-      .select("*, sellers(name, phone)")
+      .select("*")
       .eq("id", id)
       .single();
 
     if (error) {
-      console.error("Error fetching vehicle:", error);
-      throw error;
+      console.error("Error fetching vehicle by ID:", error);
+      return null;
     }
 
-    if (!data) return null;
-
-    return {
-      id: data.id,
-      brand: data.brand,
-      model: data.model,
-      year: data.year,
-      price: data.price,
-      mileage: data.mileage,
-      transmission: data.transmission as "manual" | "automatic",
-      fuel: data.fuel as "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex",
-      location: data.location as { state: string; city: string; region?: string },
-      features: data.features,
-      description: data.description,
-      images: data.images,
-      status: data.status as "available" | "sold" | "reserved",
-      sellerId: data.seller_id,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
-    };
+    return data as Vehicle;
   } catch (error) {
     console.error("Error in getVehicleById:", error);
     return null;
   }
 };
 
+export const createVehicle = async (vehicle: Partial<Vehicle>): Promise<Vehicle | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("vehicles")
+      .insert(vehicle)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating vehicle:", error);
+      return null;
+    }
+
+    return data as Vehicle;
+  } catch (error) {
+    console.error("Error in createVehicle:", error);
+    return null;
+  }
+};
+
+export const updateVehicle = async (id: string, vehicle: Partial<Vehicle>): Promise<Vehicle | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("vehicles")
+      .update(vehicle)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error updating vehicle:", error);
+      return null;
+    }
+
+    return data as Vehicle;
+  } catch (error) {
+    console.error("Error in updateVehicle:", error);
+    return null;
+  }
+};
+
+export const deleteVehicle = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("vehicles")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting vehicle:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in deleteVehicle:", error);
+    return false;
+  }
+};
+
+// Seller services
 export const getSellers = async (): Promise<Seller[]> => {
   try {
     const { data, error } = await supabase
       .from("sellers")
-      .select("*");
+      .select("*")
+      .order("name");
 
     if (error) {
       console.error("Error fetching sellers:", error);
-      throw error;
+      return [];
     }
 
-    return data.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      phone: item.phone,
-      city: item.city,
-      state: item.state,
-      email: item.email || '',
-      createdAt: item.created_at
-    }));
+    return data as Seller[];
   } catch (error) {
     console.error("Error in getSellers:", error);
     return [];
@@ -119,122 +131,153 @@ export const getSellerById = async (id: string): Promise<Seller | null> => {
       .single();
 
     if (error) {
-      console.error("Error fetching seller:", error);
-      throw error;
+      console.error("Error fetching seller by ID:", error);
+      return null;
     }
 
-    if (!data) return null;
-
-    return {
-      id: data.id,
-      name: data.name,
-      phone: data.phone,
-      city: data.city,
-      state: data.state,
-      email: data.email || '',
-      createdAt: data.created_at
-    };
+    return data as Seller;
   } catch (error) {
     console.error("Error in getSellerById:", error);
     return null;
   }
 };
 
+// Proposal services
 export const getProposals = async (): Promise<Proposal[]> => {
   try {
     const { data, error } = await supabase
       .from("proposals")
-      .select("*, vehicle:vehicle_id(brand, model, year)");
+      .select("*, vehicle:vehicle_id(id, brand, model, year)")
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching proposals:", error);
-      throw error;
+      return [];
     }
 
-    return data.map((item: any) => ({
-      id: item.id,
-      vehicleId: item.vehicle_id,
-      name: item.name,
-      email: item.email,
-      phone: item.phone,
-      vehicleInfo: {
-        brand: item.vehicle?.brand || "",
-        model: item.vehicle?.model || "",
-        year: item.vehicle?.year || 0
-      },
-      message: item.message,
-      status: item.status as "pending" | "contacted" | "closed",
-      createdAt: item.created_at
-    }));
+    return data as Proposal[];
   } catch (error) {
     console.error("Error in getProposals:", error);
     return [];
   }
 };
 
-export const getDashboardStats = async (): Promise<DashboardStats> => {
+export const getProposalById = async (id: string): Promise<Proposal | null> => {
   try {
-    // Get total vehicles
-    const { count: totalVehicles, error: vehicleError } = await supabase
-      .from("vehicles")
-      .select("*", { count: "exact", head: true });
-
-    // Get vehicle status counts
-    const { data: statusCounts, error: statusError } = await supabase
-      .from("vehicles")
-      .select("status")
-      .then(({ data }) => {
-        const counts = { available: 0, sold: 0, reserved: 0 };
-        data?.forEach((item) => {
-          if (item.status === "available") counts.available++;
-          if (item.status === "sold") counts.sold++;
-          if (item.status === "reserved") counts.reserved++;
-        });
-        return { data: counts, error: null };
-      });
-
-    // Get total proposals
-    const { count: totalProposals, error: proposalError } = await supabase
+    const { data, error } = await supabase
       .from("proposals")
-      .select("*", { count: "exact", head: true });
+      .select("*, vehicle:vehicle_id(id, brand, model, year)")
+      .eq("id", id)
+      .single();
 
-    // Get proposal status counts
-    const { data: proposalStatusCounts, error: proposalStatusError } = await supabase
-      .from("proposals")
-      .select("status")
-      .then(({ data }) => {
-        const counts = { pending: 0, contacted: 0, closed: 0 };
-        data?.forEach((item) => {
-          if (item.status === "pending") counts.pending++;
-          if (item.status === "contacted") counts.contacted++;
-          if (item.status === "closed") counts.closed++;
-        });
-        return { data: counts, error: null };
-      });
-
-    if (vehicleError || statusError || proposalError || proposalStatusError) {
-      console.error("Error fetching dashboard stats:", 
-        vehicleError || statusError || proposalError || proposalStatusError);
-      throw vehicleError || statusError || proposalError || proposalStatusError;
+    if (error) {
+      console.error("Error fetching proposal by ID:", error);
+      return null;
     }
 
+    return data as Proposal;
+  } catch (error) {
+    console.error("Error in getProposalById:", error);
+    return null;
+  }
+};
+
+export const updateProposalStatus = async (id: string, status: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("proposals")
+      .update({ status })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating proposal status:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in updateProposalStatus:", error);
+    return false;
+  }
+};
+
+// Dashboard statistics
+export const getDashboardStats = async (): Promise<DashboardStats> => {
+  try {
+    // Get counts for vehicles by status
+    const { data: vehicleCounts, error: vehicleError } = await supabase
+      .from("vehicles")
+      .select("status", { count: 'exact' })
+      .in("status", ["available", "sold", "reserved"]);
+
+    if (vehicleError) {
+      console.error("Error fetching vehicle counts:", vehicleError);
+    }
+
+    const totalVehicles = vehicleCounts?.length || 0;
+    const soldVehicles = vehicleCounts?.filter(v => v.status === "sold").length || 0;
+    const reservedVehicles = vehicleCounts?.filter(v => v.status === "reserved").length || 0;
+
+    // Get counts for proposals by status
+    const { data: proposalCounts, error: proposalError } = await supabase
+      .from("proposals")
+      .select("status", { count: 'exact' })
+      .in("status", ["pending", "contacted", "closed"]);
+
+    if (proposalError) {
+      console.error("Error fetching proposal counts:", proposalError);
+    }
+
+    const totalProposals = proposalCounts?.length || 0;
+    const pendingProposals = proposalCounts?.filter(p => p.status === "pending").length || 0;
+    const contactedProposals = proposalCounts?.filter(p => p.status === "contacted").length || 0;
+    const closedProposals = proposalCounts?.filter(p => p.status === "closed").length || 0;
+
+    // Get top brand
+    const { data: brands, error: brandsError } = await supabase
+      .from("vehicles")
+      .select("brand");
+
+    if (brandsError) {
+      console.error("Error fetching brands:", brandsError);
+    }
+
+    // Count occurrences of each brand
+    const brandCounts: Record<string, number> = {};
+    brands?.forEach(vehicle => {
+      brandCounts[vehicle.brand] = (brandCounts[vehicle.brand] || 0) + 1;
+    });
+
+    // Find the brand with the most vehicles
+    let topBrandName = "";
+    let topBrandCount = 0;
+
+    Object.entries(brandCounts).forEach(([brand, count]) => {
+      if (count > topBrandCount) {
+        topBrandName = brand;
+        topBrandCount = count;
+      }
+    });
+
     return {
-      totalVehicles: totalVehicles || 0,
-      soldVehicles: statusCounts?.sold || 0,
-      reservedVehicles: statusCounts?.reserved || 0,
-      totalProposals: totalProposals || 0,
-      pendingProposals: proposalStatusCounts?.pending || 0,
-      contactedProposals: proposalStatusCounts?.contacted || 0,
-      closedProposals: proposalStatusCounts?.closed || 0,
-      totalSold: statusCounts?.sold || 0,
+      totalVehicles,
+      soldVehicles,
+      reservedVehicles,
+      totalProposals,
+      pendingProposals,
+      contactedProposals,
+      closedProposals,
       topBrand: {
-        name: '',
-        count: 0
+        name: topBrandName,
+        count: topBrandCount
       },
-      newProposals: proposalStatusCounts?.pending || 0
+      newProposals: pendingProposals
     };
+
   } catch (error) {
     console.error("Error in getDashboardStats:", error);
+    
+    // Return default values in case of error
     return {
       totalVehicles: 0,
       soldVehicles: 0,
@@ -243,9 +286,8 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
       pendingProposals: 0,
       contactedProposals: 0,
       closedProposals: 0,
-      totalSold: 0,
       topBrand: {
-        name: '',
+        name: "",
         count: 0
       },
       newProposals: 0

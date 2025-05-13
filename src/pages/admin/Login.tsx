@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Car, AtSign, LockKeyhole, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,26 +30,12 @@ const formSchema = z.object({
   email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
   password: z
     .string()
-    .min(6, "A senha deve ter pelo menos 6 caracteres")
-    .max(50, "A senha não pode ter mais de 50 caracteres"),
+    .min(1, "A senha é obrigatória"),
 });
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user) {
-        navigate("/admin/dashboard");
-      }
-    };
-    
-    checkUser();
-  }, [navigate]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,15 +49,11 @@ const Login: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Clean up any existing auth state
+      // Clean up existing auth state
       cleanupAuthState();
       
-      // Attempt to sign out globally first to prevent auth conflicts
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-      }
+      // Sign out
+      await supabase.auth.signOut({ scope: 'global' });
       
       // Sign in with email/password
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -82,11 +63,20 @@ const Login: React.FC = () => {
       
       if (error) throw error;
       
-      if (data.user) {
-        toast.success("Login realizado com sucesso");
-        // Force page reload to ensure clean auth state
-        window.location.href = '/admin/dashboard';
+      // Check if user profile exists and has admin role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+      
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
       }
+      
+      // Success message and redirect
+      toast.success("Login realizado com sucesso");
+      navigate('/admin/dashboard');
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error(error.message || "Erro ao fazer login. Verifique suas credenciais.");

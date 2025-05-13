@@ -1,4 +1,3 @@
-
 export interface Vehicle {
   id: string;
   brand: string;
@@ -6,61 +5,47 @@ export interface Vehicle {
   year: number;
   price: number;
   mileage: number;
-  transmission: "manual" | "automatic";
-  fuel: "gasoline" | "ethanol" | "diesel" | "electric" | "hybrid" | "flex";
+  transmission: string;
+  fuel: string;
   location: {
     state: string;
     city: string;
-    region?: string;
+    region: string;
   };
   features: string[];
   description: string;
   images: string[];
-  status: "available" | "sold" | "reserved";
-  createdAt: string;
-  updatedAt: string;
+  status: string;
   sellerId?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Seller {
   id: string;
   name: string;
   phone: string;
+  email?: string;
   city: string;
   state: string;
-  email?: string;
-  createdAt: string;
+  created_at?: string;
 }
 
 export interface Proposal {
   id: string;
-  vehicleId: string;
-  vehicleInfo: {
-    brand: string;
-    model: string;
-    year: number;
-  };
   name: string;
   email: string;
   phone: string;
   message: string;
-  status: "pending" | "contacted" | "closed";
-  createdAt: string;
-}
-
-export interface FilterOptions {
-  brand?: string;
-  model?: string;
-  state?: string;
-  city?: string;
-  region?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minYear?: number;
-  maxYear?: number;
-  transmission?: "manual" | "automatic";
-  fuel?: string[];
-  search?: string;
+  vehicle_id: string;
+  status?: string;
+  created_at?: string;
+  vehicle?: {
+    id: string;
+    brand: string;
+    model: string;
+    year: number;
+  };
 }
 
 export interface DashboardStats {
@@ -71,7 +56,6 @@ export interface DashboardStats {
   pendingProposals: number;
   contactedProposals: number;
   closedProposals: number;
-  totalSold: number;
   topBrand: {
     name: string;
     count: number;

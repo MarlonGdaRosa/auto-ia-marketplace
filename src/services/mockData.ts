@@ -1,4 +1,3 @@
-
 import { Vehicle, Seller, Proposal, DashboardStats } from "@/types";
 
 // Mock vehicles
@@ -256,19 +255,18 @@ export const proposals: Proposal[] = [
 
 // Mock dashboard stats
 export const dashboardStats: DashboardStats = {
-  totalVehicles: vehicles.length,
-  soldVehicles: vehicles.filter(v => v.status === "sold").length,
-  reservedVehicles: vehicles.filter(v => v.status === "reserved").length,
-  totalProposals: proposals.length,
-  pendingProposals: proposals.filter(p => p.status === "pending").length,
-  contactedProposals: proposals.filter(p => p.status === "contacted").length,
-  closedProposals: proposals.filter(p => p.status === "closed").length,
-  totalSold: vehicles.filter(v => v.status === "sold").length,
+  totalVehicles: 152,
+  soldVehicles: 45,
+  reservedVehicles: 18,
+  totalProposals: 87,
+  pendingProposals: 32,
+  contactedProposals: 38,
+  closedProposals: 17,
   topBrand: {
     name: "Toyota",
-    count: 2
+    count: 27
   },
-  newProposals: proposals.filter(p => p.status === "pending").length
+  newProposals: 15
 };
 
 // Get vehicles with filtering

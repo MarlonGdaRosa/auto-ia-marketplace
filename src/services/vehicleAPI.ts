@@ -266,4 +266,3 @@ export const fetchPriceByBrandModelYearMock = async (
     mesReferencia: "maio de 2025"
   };
 };
-
