@@ -51,7 +51,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
 
   const { data: cities = [] } = useQuery({
     queryKey: ['cities', selectedState],
-    queryFn: () => fetchCitiesByState(selectedState),
+    queryFn: () => fetchCitiesByState(selectedState ? parseInt(selectedState, 10) : 0),
     enabled: !!selectedState
   });
 
