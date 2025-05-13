@@ -2,7 +2,15 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from 'sonner';
-import { randomUUID } from 'crypto';
+
+// Helper function to generate UUID in browser environment
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 // Vehicle Services
 export const getVehicles = async (filters?: any) => {
@@ -208,8 +216,8 @@ export const getSellerById = async (id: string) => {
 
 export const createSeller = async (sellerData: Partial<Seller>) => {
   try {
-    // Generate a UUID for the id field
-    const sellerId = randomUUID();
+    // Generate a UUID for the id field using our browser-compatible function
+    const sellerId = generateUUID();
     
     const { data: newSeller, error } = await supabase
       .from('sellers')
