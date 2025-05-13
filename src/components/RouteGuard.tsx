@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -12,7 +12,7 @@ interface RouteGuardProps {
 
 const RouteGuard: React.FC<RouteGuardProps> = ({ 
   children, 
-  requireAdmin = true 
+  requireAdmin = false // Changed default to false to make routes accessible by default
 }) => {
   const { user, isLoading, isAdmin } = useAuth();
 
@@ -32,6 +32,7 @@ const RouteGuard: React.FC<RouteGuardProps> = ({
 
   // Require admin permission
   if (requireAdmin && !isAdmin) {
+    console.log("Access denied: User is not admin", { user, isAdmin });
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Alert variant="destructive" className="max-w-md">

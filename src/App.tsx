@@ -46,12 +46,12 @@ const App = () => (
             
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={<RouteGuard><AdminDashboard /></RouteGuard>} />
-            <Route path="/admin/vehicles" element={<RouteGuard><AdminVehicles /></RouteGuard>} />
-            <Route path="/admin/vehicles/new" element={<RouteGuard><AdminVehicleForm /></RouteGuard>} />
-            <Route path="/admin/vehicles/edit/:id" element={<RouteGuard><AdminVehicleForm /></RouteGuard>} />
-            <Route path="/admin/sellers" element={<RouteGuard><AdminSellers /></RouteGuard>} />
-            <Route path="/admin/proposals" element={<RouteGuard><AdminProposals /></RouteGuard>} />
+            <Route path="/admin/dashboard" element={<RouteGuard requireAdmin={false}><AdminDashboard /></RouteGuard>} />
+            <Route path="/admin/vehicles" element={<RouteGuard requireAdmin={false}><AdminVehicles /></RouteGuard>} />
+            <Route path="/admin/vehicles/new" element={<RouteGuard requireAdmin={true}><AdminVehicleForm /></RouteGuard>} />
+            <Route path="/admin/vehicles/edit/:id" element={<RouteGuard requireAdmin={true}><AdminVehicleForm /></RouteGuard>} />
+            <Route path="/admin/sellers" element={<RouteGuard requireAdmin={true}><AdminSellers /></RouteGuard>} />
+            <Route path="/admin/proposals" element={<RouteGuard requireAdmin={true}><AdminProposals /></RouteGuard>} />
             
             {/* Not found */}
             <Route path="*" element={<NotFound />} />
