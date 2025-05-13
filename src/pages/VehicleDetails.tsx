@@ -139,7 +139,7 @@ const VehicleDetails: React.FC = () => {
                 {vehicle.status !== "available" && (
                   <div className="absolute top-2 right-2">
                     <Badge
-                      variant={vehicle.status === "sold" ? "destructive" : "warning"}
+                      variant={vehicle.status === "sold" ? "destructive" : "secondary"}
                       className={cn(
                         "text-white py-1 px-3 text-sm",
                         vehicle.status === "sold" 

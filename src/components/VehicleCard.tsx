@@ -13,6 +13,7 @@ import { Vehicle } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -53,7 +54,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
         )}
         {vehicle.status === "reserved" && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Badge variant="warning" className="text-lg py-1.5 bg-amber-500">Reservado</Badge>
+            <Badge variant="secondary" className="text-lg py-1.5 bg-amber-500 text-white">Reservado</Badge>
           </div>
         )}
       </div>
