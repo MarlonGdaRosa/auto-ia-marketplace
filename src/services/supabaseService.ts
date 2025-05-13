@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Vehicle, Seller, Proposal } from '@/types';
 import { toast } from 'sonner';
+import { crypto } from 'crypto';
 
 // Vehicle Services
 export const getVehicles = async (filters?: any) => {
@@ -206,11 +207,13 @@ export const getSellerById = async (id: string) => {
 
 export const createSeller = async (sellerData: Partial<Seller>) => {
   try {
-    // Generate a UUID for the id instead of using crypto.randomUUID()
-    // This ensures we have a valid UUID format expected by Supabase
+    // We need to explicitly generate a UUID for the id field since it's required by the TypeScript type
+    const sellerId = crypto.randomUUID();
+    
     const { data: newSeller, error } = await supabase
       .from('sellers')
       .insert({
+        id: sellerId,
         name: sellerData.name || '',
         phone: sellerData.phone || '',
         email: sellerData.email,
