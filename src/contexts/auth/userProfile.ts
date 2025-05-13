@@ -9,7 +9,7 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .maybeSingle(); // Usando maybeSingle em vez de single para evitar erro quando nenhum perfil for encontrado
     
     if (error) {
       throw error;
@@ -19,17 +19,30 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
       return {
         id: userId,
         email: profile.email || '',
-        name: profile.name,
+        name: profile.name || 'Usuário',
         cpf: profile.cpf || undefined,
         phone: profile.phone || undefined,
-        role: profile.role as "user" | "admin"
+        role: profile.role as "user" | "admin" || "user"
+      };
+    } else {
+      console.log("Perfil não encontrado, criando perfil padrão para", userId);
+      // Se o perfil não existir, retornamos um perfil padrão
+      return {
+        id: userId,
+        email: '',
+        name: 'Usuário',
+        role: "user"
       };
     }
-    
-    return null;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     toast.error("Erro ao carregar perfil do usuário");
-    return null;
+    // Retornamos um perfil padrão em caso de erro
+    return {
+      id: userId,
+      email: '',
+      name: 'Usuário',
+      role: "user"
+    };
   }
 };

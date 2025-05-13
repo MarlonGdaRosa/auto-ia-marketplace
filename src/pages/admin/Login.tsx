@@ -54,13 +54,17 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (isLoading) return;
+    
     setIsLoading(true);
     
     try {
       await login(values.email, values.password);
-      // The navigation is handled in the login method and by the session effect above
+      // A navegação é tratada no método login e pelo efeito de sessão acima
     } catch (error: any) {
-      // Error is already handled in the login method
+      // O erro já é tratado no método login
+      console.error("Login error:", error);
+    } finally {
       setIsLoading(false);
     }
   };

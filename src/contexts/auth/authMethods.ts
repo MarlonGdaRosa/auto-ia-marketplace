@@ -1,4 +1,5 @@
 
+
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { NavigateFunction } from "react-router-dom";
@@ -39,7 +40,7 @@ export const login = async (
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
-        .single();
+        .maybeSingle();
         
       if (profile?.role === 'admin') {
         navigate("/admin/dashboard");
@@ -90,12 +91,15 @@ export const register = async (
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          id: data.user.id,
           name: userData.name,
+          email: userData.email,
           cpf: userData.cpf,
-          phone: userData.phone
-        })
-        .eq('id', data.user.id);
+          phone: userData.phone,
+          role: 'user',
+          updated_at: new Date()
+        });
         
       if (profileError) {
         console.error("Error updating profile:", profileError);

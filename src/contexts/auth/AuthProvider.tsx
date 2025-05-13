@@ -21,35 +21,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authInitialized, setAuthInitialized] = useState(false);
   const navigate = useNavigate();
 
   // Initialize auth state and listen for changes
   useEffect(() => {
+    // Evitar inicialização dupla
+    if (authInitialized) return;
+    
     const initializeAuth = async () => {
       try {
-        // Get the current session
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setSession(currentSession);
+        console.log("Inicializando autenticação...");
         
-        // If session exists, fetch the user profile
-        if (currentSession?.user) {
-          const profile = await fetchUserProfile(currentSession.user.id);
-          if (profile) {
-            setUser(profile);
-          }
-        }
-        
-        setIsLoading(false);
-        
-        // Set up auth state listener
+        // Set up auth state listener primeiro para evitar perder eventos
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, newSession) => {
             console.log("Auth state change:", event);
             setSession(newSession);
             
             if (event === 'SIGNED_IN' && newSession) {
-              // Use timeout to avoid potential deadlocks
+              // Usar setTimeout para evitar potenciais deadlocks
               setTimeout(() => {
+                console.log("Buscando perfil do usuário após SIGNED_IN");
                 fetchUserProfile(newSession.user.id).then(profile => {
                   if (profile) {
                     setUser(profile);
@@ -58,14 +51,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
               }, 0);
             } else if (event === 'SIGNED_OUT') {
-              // Fix: Using 'SIGNED_OUT' instead of 'USER_DELETED'
+              console.log("Usuário desconectado, limpando estado");
               setUser(null);
               setIsLoading(false);
-              // Redirect to home page or login page when signed out
-              navigate("/");
             }
           }
         );
+        
+        // DEPOIS verifica se já existe uma sessão
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log("Sessão atual:", currentSession ? "existe" : "não existe");
+        setSession(currentSession);
+        
+        // Se sessão existe, busca o perfil do usuário
+        if (currentSession?.user) {
+          try {
+            console.log("Buscando perfil do usuário na inicialização");
+            const profile = await fetchUserProfile(currentSession.user.id);
+            if (profile) {
+              console.log("Perfil encontrado:", profile.role);
+              setUser(profile);
+            }
+          } catch (profileError) {
+            console.error("Erro ao buscar perfil:", profileError);
+          }
+        }
+        
+        setIsLoading(false);
+        setAuthInitialized(true);
         
         return () => {
           subscription.unsubscribe();
@@ -73,11 +86,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error("Error initializing auth:", error);
         setIsLoading(false);
+        setAuthInitialized(true);
       }
     };
     
     initializeAuth();
-  }, [navigate]);
+  }, [navigate, authInitialized]);
 
   const handleLogin = async (email: string, password: string) => {
     return login(email, password, navigate, setIsLoading);
