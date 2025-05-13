@@ -12,9 +12,9 @@ interface RouteGuardProps {
 
 const RouteGuard: React.FC<RouteGuardProps> = ({ 
   children, 
-  requireAdmin = false // Changed default to false to make routes accessible by default
+  requireAdmin = false
 }) => {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { user, isLoading } = useAuth();
 
   // Show loading state
   if (isLoading) {
@@ -30,24 +30,7 @@ const RouteGuard: React.FC<RouteGuardProps> = ({
     return <Navigate to="/admin" replace />;
   }
 
-  // Require admin permission
-  if (requireAdmin && !isAdmin) {
-    console.log("Access denied: User is not admin", { user, isAdmin });
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Acesso restrito</AlertTitle>
-          <AlertDescription>
-            Você não tem permissão para acessar esta área.
-            Contate um administrador se precisar de ajuda.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  // All checks passed
+  // All logged-in users can access the pages now
   return <>{children}</>;
 };
 
