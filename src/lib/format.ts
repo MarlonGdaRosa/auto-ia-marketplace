@@ -15,7 +15,23 @@ export const formatCurrency = (value: number | string | undefined) => {
 export const formatMileage = (value: number | string | undefined) => {
   if (value === undefined || value === null) return '0 km';
   
-  const numValue = typeof value === 'string' ? parseInt(value) : value;
+  // If it's a string, sanitize it by removing dots and replacing commas with dots
+  let numValue;
+  if (typeof value === 'string') {
+    // Remove all non-numeric characters except digits and dots/commas
+    const sanitizedValue = value.replace(/[^\d.,]/g, '');
+    // Replace dots with nothing (they are thousand separators in pt-BR)
+    // Replace comma with dot (decimal separator in pt-BR)
+    const normalizedValue = sanitizedValue.replace(/\./g, '').replace(',', '.');
+    numValue = parseFloat(normalizedValue);
+    
+    // If parsing failed, return 0
+    if (isNaN(numValue)) {
+      numValue = 0;
+    }
+  } else {
+    numValue = value;
+  }
   
   return new Intl.NumberFormat('pt-BR', {
     maximumFractionDigits: 0

@@ -1,4 +1,3 @@
-
 import { Vehicle } from "@/types";
 
 export const useVehicleFormHandlers = (
@@ -15,16 +14,15 @@ export const useVehicleFormHandlers = (
   };
 
   const handleMileageChange = (value: string | undefined) => {
-    // Convert to number for storage, ensuring we handle the input properly
+    // Handle the mileage input properly
     let numValue = 0;
     
     if (value) {
-      // Remove non-numeric characters except digits and dots
-      const cleanValue = value.replace(/[^\d.]/g, '');
-      // Remove dots (thousand separators)
-      const noDotsValue = cleanValue.replace(/\./g, '');
+      // Remove all non-numeric characters
+      const cleanValue = value.replace(/[^\d]/g, '');
+      
       // Parse as integer
-      numValue = parseInt(noDotsValue);
+      numValue = parseInt(cleanValue);
       
       // If parsing failed, default to 0
       if (isNaN(numValue)) {
