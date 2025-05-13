@@ -220,25 +220,35 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
 
     return {
       totalVehicles: totalVehicles || 0,
-      availableVehicles: statusCounts?.available || 0,
       soldVehicles: statusCounts?.sold || 0,
       reservedVehicles: statusCounts?.reserved || 0,
       totalProposals: totalProposals || 0,
       pendingProposals: proposalStatusCounts?.pending || 0,
       contactedProposals: proposalStatusCounts?.contacted || 0,
-      closedProposals: proposalStatusCounts?.closed || 0
+      closedProposals: proposalStatusCounts?.closed || 0,
+      totalSold: statusCounts?.sold || 0,
+      topBrand: {
+        name: '',
+        count: 0
+      },
+      newProposals: proposalStatusCounts?.pending || 0
     };
   } catch (error) {
     console.error("Error in getDashboardStats:", error);
     return {
       totalVehicles: 0,
-      availableVehicles: 0,
       soldVehicles: 0,
       reservedVehicles: 0,
       totalProposals: 0,
       pendingProposals: 0,
       contactedProposals: 0,
-      closedProposals: 0
+      closedProposals: 0,
+      totalSold: 0,
+      topBrand: {
+        name: '',
+        count: 0
+      },
+      newProposals: 0
     };
   }
 };

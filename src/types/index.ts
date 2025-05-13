@@ -65,6 +65,12 @@ export interface FilterOptions {
 
 export interface DashboardStats {
   totalVehicles: number;
+  soldVehicles: number;
+  reservedVehicles: number;
+  totalProposals: number;
+  pendingProposals: number;
+  contactedProposals: number;
+  closedProposals: number;
   totalSold: number;
   topBrand: {
     name: string;
