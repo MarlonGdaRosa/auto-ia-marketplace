@@ -9,7 +9,164 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          cpf: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          role: string | null
+        }
+        Insert: {
+          cpf?: string | null
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          phone?: string | null
+          role?: string | null
+        }
+        Update: {
+          cpf?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+      proposals: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+          status: string | null
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+          status?: string | null
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          status?: string | null
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sellers: {
+        Row: {
+          city: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string
+          state: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          email?: string | null
+          id: string
+          name: string
+          phone: string
+          state: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          state?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          brand: string
+          created_at: string
+          description: string
+          features: string[]
+          fuel: string
+          id: string
+          images: string[]
+          location: Json
+          mileage: number
+          model: string
+          price: number
+          seller_id: string | null
+          status: string
+          transmission: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          description: string
+          features?: string[]
+          fuel: string
+          id?: string
+          images?: string[]
+          location: Json
+          mileage: number
+          model: string
+          price: number
+          seller_id?: string | null
+          status?: string
+          transmission: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          description?: string
+          features?: string[]
+          fuel?: string
+          id?: string
+          images?: string[]
+          location?: Json
+          mileage?: number
+          model?: string
+          price?: number
+          seller_id?: string | null
+          status?: string
+          transmission?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

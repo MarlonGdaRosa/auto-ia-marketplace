@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
@@ -46,10 +47,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Simulate checking session with stored user data
-        const storedUser = localStorage.getItem("automarket_user");
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        // Check for session with Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Get user profile from database
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profile) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email!,
+              name: profile.name,
+              cpf: profile.cpf || undefined,
+              phone: profile.phone || undefined,
+              role: profile.role as "user" | "admin"
+            });
+          }
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
@@ -58,44 +76,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          // Get user profile when auth state changes
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profile) {
+            setUser({
+              id: session.user.id,
+              email: session.user.email!,
+              name: profile.name,
+              cpf: profile.cpf || undefined,
+              phone: profile.phone || undefined,
+              role: profile.role as "user" | "admin"
+            });
+          }
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
     checkUser();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
       
-      // Simulate login - In a real app, this would be an API call to Supabase
-      // This is just for demonstration purposes
-      if (email === "admin@example.com" && password === "password") {
-        const userData: User = {
-          id: "1",
-          email: "admin@example.com",
-          name: "Admin User",
-          role: "admin"
-        };
-        setUser(userData);
-        localStorage.setItem("automarket_user", JSON.stringify(userData));
-        toast.success("Login realizado com sucesso!");
-        navigate("/admin/dashboard");
-      } else if (email && password) {
-        // Simulate a regular user login
-        const userData: User = {
-          id: "2",
-          email,
-          name: "Cliente",
-          role: "user"
-        };
-        setUser(userData);
-        localStorage.setItem("automarket_user", JSON.stringify(userData));
-        toast.success("Login realizado com sucesso!");
-        navigate("/");
-      } else {
-        toast.error("Email ou senha inválidos");
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        throw error;
       }
-    } catch (error) {
+      
+      toast.success("Login realizado com sucesso!");
+      
+      // Redirect based on user role
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (profile?.role === 'admin') {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
-      toast.error("Erro ao realizar login");
+      toast.error(error.message || "Erro ao realizar login");
     } finally {
       setIsLoading(false);
     }
@@ -111,33 +155,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       
-      // Simulate registration
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
+      // Register the user with Supabase
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        name: userData.name,
-        cpf: userData.cpf,
-        phone: userData.phone,
-        role: "user"
-      };
+        password: userData.password,
+        options: {
+          data: {
+            name: userData.name
+          }
+        }
+      });
       
-      setUser(newUser);
-      localStorage.setItem("automarket_user", JSON.stringify(newUser));
+      if (error) {
+        throw error;
+      }
+      
+      // Update the profile with additional information
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            name: userData.name,
+            cpf: userData.cpf,
+            phone: userData.phone
+          })
+          .eq('id', data.user.id);
+          
+        if (profileError) {
+          console.error("Error updating profile:", profileError);
+        }
+      }
+      
       toast.success("Cadastro realizado com sucesso!");
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error("Erro ao realizar cadastro");
+      toast.error(error.message || "Erro ao realizar cadastro");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("automarket_user");
-    toast.success("Logout realizado com sucesso!");
-    navigate("/");
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      toast.success("Logout realizado com sucesso!");
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Erro ao realizar logout");
+    }
   };
 
   const isAdmin = user?.role === "admin";
