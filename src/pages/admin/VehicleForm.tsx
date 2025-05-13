@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { Loader2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatMileage } from "@/lib/format";
+import CurrencyInput from "react-currency-input-field";
 
 const VehicleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,24 +52,6 @@ const VehicleForm: React.FC = () => {
     status: "available",
   });
 
-  // Format price display
-  const [formattedPrice, setFormattedPrice] = useState('');
-  const [formattedMileage, setFormattedMileage] = useState('');
-
-  // Update formatted price when raw price changes
-  useEffect(() => {
-    if (formData.price !== undefined) {
-      setFormattedPrice(formatCurrency(formData.price).replace('R$', '').trim());
-    }
-  }, [formData.price]);
-
-  // Update formatted mileage when raw mileage changes
-  useEffect(() => {
-    if (formData.mileage !== undefined) {
-      setFormattedMileage(formatMileage(formData.mileage).replace('km', '').trim());
-    }
-  }, [formData.mileage]);
-
   // Fetch sellers
   useEffect(() => {
     const loadSellers = async () => {
@@ -93,8 +76,6 @@ const VehicleForm: React.FC = () => {
           const vehicle = await getVehicleById(id || "");
           if (vehicle) {
             setFormData(vehicle);
-            setFormattedPrice(formatCurrency(vehicle.price).replace('R$', '').trim());
-            setFormattedMileage(formatMileage(vehicle.mileage).replace('km', '').trim());
           } else {
             toast.error("Veículo não encontrado");
             navigate("/admin/vehicles");
@@ -112,26 +93,18 @@ const VehicleForm: React.FC = () => {
     }
   }, [id, isEditMode, navigate]);
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow only numbers and decimal separator
-    const value = e.target.value.replace(/[^\d,.]/g, '');
-    setFormattedPrice(value);
-    
+  const handlePriceChange = (value: string | undefined) => {
     // Convert to number for storage
-    const numValue = parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+    const numValue = value ? parseFloat(value.replace(/\./g, '').replace(',', '.')) : 0;
     setFormData({
       ...formData,
       price: numValue
     });
   };
 
-  const handleMileageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow only numbers
-    const value = e.target.value.replace(/[^\d,.]/g, '');
-    setFormattedMileage(value);
-    
+  const handleMileageChange = (value: string | undefined) => {
     // Convert to number for storage
-    const numValue = parseInt(value.replace(/\./g, '').replace(',', '')) || 0;
+    const numValue = value ? parseInt(value.replace(/\./g, '').replace(',', '')) : 0;
     setFormData({
       ...formData,
       mileage: numValue
@@ -312,14 +285,17 @@ const VehicleForm: React.FC = () => {
                   Preço (R$) <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                  <Input
+                  <CurrencyInput
                     id="price"
                     name="price"
-                    type="text"
-                    className="pl-8"
-                    value={formattedPrice}
-                    onChange={handlePriceChange}
+                    placeholder="R$ 0,00"
+                    defaultValue={formData.price}
+                    decimalsLimit={2}
+                    decimalSeparator=","
+                    groupSeparator="."
+                    prefix="R$ "
+                    onValueChange={handlePriceChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     required
                   />
                 </div>
@@ -327,15 +303,18 @@ const VehicleForm: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="mileage">Quilometragem</Label>
                 <div className="relative">
-                  <Input
+                  <CurrencyInput
                     id="mileage"
                     name="mileage"
-                    type="text"
-                    className="pr-8"
-                    value={formattedMileage}
-                    onChange={handleMileageChange}
+                    placeholder="0"
+                    defaultValue={formData.mileage}
+                    decimalsLimit={0}
+                    decimalSeparator=","
+                    groupSeparator="."
+                    suffix=" km"
+                    onValueChange={handleMileageChange}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
-                  <span className="absolute right-3 top-2.5 text-gray-500">km</span>
                 </div>
               </div>
               <div className="space-y-2">

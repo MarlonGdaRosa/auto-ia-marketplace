@@ -62,7 +62,7 @@ export const getVehicleById = async (id: string) => {
       .from('vehicles')
       .select('*')
       .eq('id', id)
-      .maybeSingle(); // Use maybeSingle() to avoid errors when no results are found
+      .maybeSingle(); // Changed from single() to maybeSingle()
       
     if (error) {
       console.error('Error fetching vehicle:', error);
@@ -138,7 +138,7 @@ export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) =
     .update(dbVehicle)
     .eq('id', id)
     .select()
-    .single();
+    .maybeSingle(); // Changed from single() to maybeSingle()
     
   if (error) {
     console.error('Error updating vehicle:', error);

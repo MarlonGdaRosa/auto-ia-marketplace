@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   fetchBrands, fetchModelsByBrand, fetchYearsByBrandAndModel, fetchPriceByBrandModelYear 
@@ -10,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 interface FipePrice {
@@ -80,7 +81,10 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
         }
       } catch (error) {
         console.error("Error loading brands:", error);
-        toast.error("Erro ao carregar marcas de veículos");
+        toast({
+          title: "Erro ao carregar marcas de veículos",
+          variant: "destructive"
+        });
       } finally {
         setLoadingBrands(false);
       }
@@ -90,6 +94,7 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
   }, [initialBrand]);
 
   const handleBrandChange = async (brandId: string) => {
+    // Reset dependent fields when brand changes
     setSelectedBrandId(brandId);
     setSelectedModelId("");
     setSelectedYearId("");
@@ -122,13 +127,17 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       }
     } catch (error) {
       console.error("Error loading models:", error);
-      toast.error("Erro ao carregar modelos");
+      toast({
+        title: "Erro ao carregar modelos",
+        variant: "destructive"
+      });
     } finally {
       setLoadingModels(false);
     }
   };
 
   const handleModelChange = async (modelId: string) => {
+    // Reset dependent fields when model changes
     setSelectedModelId(modelId);
     setSelectedYearId("");
     setYears([]);
@@ -159,7 +168,10 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       }
     } catch (error) {
       console.error("Error loading years:", error);
-      toast.error("Erro ao carregar anos");
+      toast({
+        title: "Erro ao carregar anos",
+        variant: "destructive"
+      });
     } finally {
       setLoadingYears(false);
     }
@@ -206,7 +218,10 @@ const FipeVehicleSelector: React.FC<FipeVehicleSelectorProps> = ({
       }
     } catch (error) {
       console.error("Error loading price:", error);
-      toast.error("Erro ao carregar preço FIPE");
+      toast({
+        title: "Erro ao carregar preço FIPE",
+        variant: "destructive"
+      });
     } finally {
       setLoadingPrice(false);
     }
