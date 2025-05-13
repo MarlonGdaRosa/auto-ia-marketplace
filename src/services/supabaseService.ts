@@ -61,7 +61,26 @@ export const getVehicles = async (filters?: FilterOptions): Promise<Vehicle[]> =
     return [];
   }
   
-  return data as Vehicle[];
+  // Transform the data to match our Vehicle type
+  return data.map(item => ({
+    id: item.id,
+    brand: item.brand,
+    model: item.model,
+    year: item.year,
+    price: item.price,
+    mileage: item.mileage,
+    transmission: item.transmission,
+    fuel: item.fuel,
+    location: item.location,
+    features: item.features,
+    description: item.description,
+    images: item.images,
+    status: item.status,
+    sellerId: item.seller_id,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+    sellers: item.sellers
+  })) as Vehicle[];
 };
 
 export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
@@ -76,7 +95,28 @@ export const getVehicleById = async (id: string): Promise<Vehicle | null> => {
     return null;
   }
   
-  return data as Vehicle;
+  // Transform the data to match our Vehicle type
+  if (!data) return null;
+  
+  return {
+    id: data.id,
+    brand: data.brand,
+    model: data.model,
+    year: data.year,
+    price: data.price,
+    mileage: data.mileage,
+    transmission: data.transmission,
+    fuel: data.fuel,
+    location: data.location,
+    features: data.features,
+    description: data.description,
+    images: data.images,
+    status: data.status,
+    sellerId: data.seller_id,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    sellers: data.sellers
+  } as Vehicle;
 };
 
 export const getSellers = async (): Promise<Seller[]> => {
@@ -89,7 +129,16 @@ export const getSellers = async (): Promise<Seller[]> => {
     return [];
   }
   
-  return data as Seller[];
+  // Transform the data to match our Seller type
+  return data.map(item => ({
+    id: item.id,
+    name: item.name,
+    phone: item.phone,
+    city: item.city,
+    state: item.state,
+    email: item.email || '',
+    createdAt: item.created_at
+  })) as Seller[];
 };
 
 export const getSellerById = async (id: string): Promise<Seller | null> => {
@@ -104,7 +153,18 @@ export const getSellerById = async (id: string): Promise<Seller | null> => {
     return null;
   }
   
-  return data as Seller;
+  // Transform the data to match our Seller type
+  if (!data) return null;
+  
+  return {
+    id: data.id,
+    name: data.name,
+    phone: data.phone,
+    city: data.city,
+    state: data.state,
+    email: data.email || '',
+    createdAt: data.created_at
+  } as Seller;
 };
 
 export const getProposals = async (): Promise<Proposal[]> => {
@@ -120,13 +180,19 @@ export const getProposals = async (): Promise<Proposal[]> => {
   
   // Transform the data to match our Proposal type
   return data.map(item => ({
-    ...item,
+    id: item.id,
     vehicleId: item.vehicle_id,
     vehicleInfo: {
       brand: item.vehicles.brand,
       model: item.vehicles.model,
       year: item.vehicles.year
-    }
+    },
+    name: item.name,
+    email: item.email,
+    phone: item.phone,
+    message: item.message,
+    status: item.status as "pending" | "contacted" | "closed",
+    createdAt: item.created_at
   })) as Proposal[];
 };
 

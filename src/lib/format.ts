@@ -15,6 +15,13 @@ export const formatDate = (dateString: string): string => {
   return date.toLocaleDateString('pt-BR');
 };
 
+// Format date and time
+export const formatDateTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR') + ' ' + 
+    date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+};
+
 // Format phone number as (XX) XXXXX-XXXX
 export const formatPhone = (phone: string): string => {
   const cleaned = phone.replace(/\D/g, '');
