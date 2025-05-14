@@ -28,8 +28,17 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
     initialData: initialData || existingVehicle
   });
 
+  // Modify the handleSubmit to accept and process the form event
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    return vehicleForm.handleSubmit();
+  };
+
   return {
     ...vehicleForm,
+    handleSubmit,
     isLoadingVehicle: isLoading,
     error,
     existingVehicle: initialData || existingVehicle

@@ -60,7 +60,7 @@ const VehicleForm: React.FC = () => {
 
   return (
     <AdminLayout title={isEditing ? "Editar Veículo" : "Novo Veículo"}>
-      <form onSubmit={(e) => handleSubmit(e)}>
+      <form onSubmit={handleSubmit}>
         <Tabs defaultValue="basic" className="mb-8">
           <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="basic">Informações Básicas</TabsTrigger>

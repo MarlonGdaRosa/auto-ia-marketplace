@@ -107,7 +107,7 @@ export const useVehicleFormImplementation = (
     });
   }, []);
 
-  // Submit form
+  // Submit form - modified to not accept args as it's now wrapped by the parent hook
   const handleSubmit = useCallback(async () => {
     try {
       setIsSubmitting(true);
