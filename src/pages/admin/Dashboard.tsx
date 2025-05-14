@@ -1,7 +1,6 @@
-
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Car } from "lucide-react";
+import { Car, RotateCcw } from "lucide-react";
 import AdminLayout from "@/components/AdminLayout";
 import { getDashboardStats } from "@/services/supabaseService";
 import StatCard from "@/components/admin/dashboard/StatCard";
@@ -13,9 +12,10 @@ import EmptyState from "@/components/admin/dashboard/EmptyState";
 
 const Dashboard: React.FC = () => {
   // Use real data from Supabase
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: getDashboardStats,
+    refetchOnWindowFocus: true, // Atualiza ao voltar para a aba
   });
 
   // Show loading state while fetching data
@@ -35,7 +35,7 @@ const Dashboard: React.FC = () => {
       </AdminLayout>
     );
   }
-
+  
   // Vehicle status data for pie chart
   const vehicleStatusData = [
     { name: "Disponíveis", value: stats.totalVehicles - stats.soldVehicles - stats.reservedVehicles, color: "#10b981" },
@@ -61,6 +61,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <AdminLayout title="Dashboard">
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="flex items-center gap-2 px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+          title="Atualizar dados"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Atualizar
+        </button>
+      </div>
+
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total de Veículos"
