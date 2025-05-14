@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,46 +33,50 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner closeButton position="top-right" />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/vehicle/:id" element={<VehicleDetails />} />
-            
-            {/* Admin routes */}
-            <Route path="/admin" element={<AdminLogin />} />
-            <Route path="/admin/dashboard" element={
-              <RouteGuard requireAdmin={false}><AdminDashboard /></RouteGuard>
-            } />
-            <Route path="/admin/vehicles" element={
-              <RouteGuard requireAdmin={false}><AdminVehicles /></RouteGuard>
-            } />
-            <Route path="/admin/vehicles/new" element={
-              <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
-            } />
-            <Route path="/admin/vehicles/edit/:id" element={
-              <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
-            } />
-            <Route path="/admin/sellers" element={
-              <RouteGuard requireAdmin={false}><AdminSellers /></RouteGuard>
-            } />
-            <Route path="/admin/proposals" element={
-              <RouteGuard requireAdmin={false}><AdminProposals /></RouteGuard>
-            } />
-            
-            {/* Not found */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner closeButton position="top-right" />
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/vehicle/:id" element={<VehicleDetails />} />
+                
+                {/* Admin routes */}
+                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin/dashboard" element={
+                  <RouteGuard requireAdmin={false}><AdminDashboard /></RouteGuard>
+                } />
+                <Route path="/admin/vehicles" element={
+                  <RouteGuard requireAdmin={false}><AdminVehicles /></RouteGuard>
+                } />
+                <Route path="/admin/vehicles/new" element={
+                  <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
+                } />
+                <Route path="/admin/vehicles/edit/:id" element={
+                  <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
+                } />
+                <Route path="/admin/sellers" element={
+                  <RouteGuard requireAdmin={false}><AdminSellers /></RouteGuard>
+                } />
+                <Route path="/admin/proposals" element={
+                  <RouteGuard requireAdmin={false}><AdminProposals /></RouteGuard>
+                } />
+                
+                {/* Not found */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;
