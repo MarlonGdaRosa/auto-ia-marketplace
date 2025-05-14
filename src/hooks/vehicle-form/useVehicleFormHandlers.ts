@@ -47,7 +47,7 @@ export const useVehicleFormHandlers = (
       setFormData({
         ...formData,
         location: {
-          ...formData.location!,
+          ...(formData.location || { state: "", city: "", region: "" }),
           [locationField]: value,
         },
       });
@@ -83,9 +83,16 @@ export const useVehicleFormHandlers = (
         });
       } catch (error) {
         console.error("Error parsing location JSON:", error);
+        // Fix: Instead of setting the field directly to the string value,
+        // initialize a proper location object
         setFormData({
           ...formData,
-          [field]: value,
+          location: {
+            ...(formData.location || {}),
+            state: "",
+            city: "",
+            region: ""
+          }
         });
       }
     } else {
