@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +19,7 @@ import AdminSellers from "./pages/admin/Sellers";
 import AdminProposals from "./pages/admin/Proposals";
 
 // Auth provider
-import { AuthProvider } from "./contexts/auth";
+import { AuthProvider } from "./contexts/AuthContext";
 import RouteGuard from "./components/RouteGuard";
 
 const queryClient = new QueryClient({
@@ -34,10 +33,12 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <AuthProvider>
         <TooltipProvider>
+          <Toaster />
+          <Sonner closeButton position="top-right" />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
@@ -55,12 +56,10 @@ const App = () => (
             {/* Not found */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Toaster />
-          <Sonner closeButton position="top-right" />
         </TooltipProvider>
       </AuthProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
 export default App;
