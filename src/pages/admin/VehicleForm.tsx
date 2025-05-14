@@ -14,18 +14,16 @@ import VehicleDescriptionForm from "@/components/admin/vehicles/VehicleDescripti
 import VehicleImagesForm from "@/components/admin/vehicles/VehicleImagesForm";
 import VehicleFormLoading from "@/components/admin/vehicles/VehicleFormLoading";
 import VehicleFormActions from "@/components/admin/vehicles/VehicleFormActions";
-import { useVehicleData } from "@/hooks/vehicle-form/useVehicleData";
 
 const VehicleForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
-  // Important: Get vehicle data hook first
-  const { initialLoading, sellers, isEditMode, fetchVehicleData } = useVehicleData(id);
-  
-  // Get vehicle form hook next
   const {
     formData,
+    initialLoading,
     loading,
+    sellers,
+    isEditMode,
     handleChange,
     handlePriceChange,
     handleMileageChange,
@@ -38,13 +36,6 @@ const VehicleForm: React.FC = () => {
     handleSubmit,
     setFormData
   } = useVehicleForm(id);
-
-  // Fetch vehicle data when in edit mode
-  useEffect(() => {
-    if (isEditMode) {
-      fetchVehicleData(setFormData);
-    }
-  }, [id, isEditMode, fetchVehicleData, setFormData]);
 
   if (initialLoading) {
     return (

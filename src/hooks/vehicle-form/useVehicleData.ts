@@ -1,4 +1,5 @@
-
+// This file is now deprecated as its functionality has been moved to ./index.ts
+// Keeping this file for backwards compatibility
 import { useState, useEffect } from "react";
 import { getVehicleById, getSellers } from "@/services/supabaseService";
 import { Vehicle, Seller } from "@/types";
