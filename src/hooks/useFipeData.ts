@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { 
-  fetchBrands, 
-  fetchModelsByBrand, 
-  fetchYearsByBrandAndModel, 
-  fetchPriceByBrandModelYear 
+  getBrands, 
+  getModels, 
+  getYears, 
+  getVehicleInfo 
 } from "@/services/vehicle";
 import { toast } from "@/hooks/use-toast";
 import { VehicleBrand, VehicleModel, VehicleYear, FipePrice } from "@/services/vehicle/types";
@@ -52,7 +51,7 @@ export const useFipeData = ({
     const loadBrands = async () => {
       setLoadingBrands(true);
       try {
-        const brandsData = await fetchBrands();
+        const brandsData = await getBrands();
         console.log("Loaded brands:", brandsData);
         if (brandsData.length > 0) {
           setBrands(brandsData);
@@ -99,7 +98,7 @@ export const useFipeData = ({
     
     setLoadingModels(true);
     try {
-      const modelsData = await fetchModelsByBrand(brandId);
+      const modelsData = await getModels(brandId);
       console.log("Loaded models:", modelsData);
       
       if (modelsData.length > 0) {
@@ -142,7 +141,7 @@ export const useFipeData = ({
     
     setLoadingYears(true);
     try {
-      const yearsData = await fetchYearsByBrandAndModel(brandId, modelId);
+      const yearsData = await getYears(brandId, modelId);
       console.log("Loaded years:", yearsData);
       
       if (yearsData.length > 0) {
@@ -181,7 +180,7 @@ export const useFipeData = ({
     
     setLoadingPrice(true);
     try {
-      const priceData = await fetchPriceByBrandModelYear(brandId, modelId, yearId);
+      const priceData = await getVehicleInfo(brandId, modelId, yearId);
       console.log("Loaded price:", priceData);
       
       if (priceData) {

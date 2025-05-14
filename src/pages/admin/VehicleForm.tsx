@@ -39,9 +39,9 @@ const VehicleForm: React.FC = () => {
   } = useVehicleForm({ vehicleId: id });
 
   // Load sellers for assignment
-  const { data: sellers = [] } = useQuery<Seller[]>({
+  const { data: sellers = [] } = useQuery({
     queryKey: ["sellers"],
-    queryFn: getSellers,
+    queryFn: getSellers
   });
 
   // Show loading state while fetching vehicle data
@@ -73,9 +73,10 @@ const VehicleForm: React.FC = () => {
           <TabsContent value="basic" className="space-y-6">
             <VehicleBasicInfoForm 
               formData={formData}
-              onChange={handleInputChange}
-              onSelectChange={handleSelectChange}
-              onFipeData={handleFipeData}
+              handlePriceChange={(value) => handleSelectChange("price", value || "0")}
+              handleMileageChange={(value) => handleSelectChange("mileage", value || "0")}
+              handleSelectChange={handleSelectChange}
+              sellers={sellers}
             />
           </TabsContent>
           
@@ -90,7 +91,20 @@ const VehicleForm: React.FC = () => {
           <TabsContent value="features" className="space-y-6">
             <VehicleFeaturesForm
               formData={formData}
-              onChange={setFormData}
+              handleFeatureChange={(e, feature) => {
+                const currentFeatures = formData.features || [];
+                if (e.target.checked) {
+                  setFormData({
+                    ...formData,
+                    features: [...currentFeatures, feature]
+                  });
+                } else {
+                  setFormData({
+                    ...formData,
+                    features: currentFeatures.filter(f => f !== feature)
+                  });
+                }
+              }}
             />
           </TabsContent>
           
@@ -104,16 +118,15 @@ const VehicleForm: React.FC = () => {
           <TabsContent value="images" className="space-y-6">
             <VehicleImagesForm
               formData={formData}
-              onFileChange={handleFileChange}
-              onRemoveImage={removeImage}
-              onReorderImages={reorderImages}
+              handleImageUpload={(e) => handleFileChange(e.target.files)}
+              handleRemoveImage={removeImage}
             />
           </TabsContent>
         </Tabs>
         
         <VehicleFormActions
-          isSubmitting={isSubmitting}
-          onCancel={() => navigate('/admin/vehicles')}
+          loading={isSubmitting}
+          isEditMode={isEditing}
         />
       </form>
     </AdminLayout>

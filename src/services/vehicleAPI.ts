@@ -1,20 +1,20 @@
 
 import { getStates, getCities, fetchStates, fetchCitiesByState } from './vehicle/locationAPI';
 import { 
-  getBrands as getFipeBrands, 
-  getModels as getFipeModels, 
-  getYears as getFipeYears, 
-  getVehicleInfo as getFipeInfo
+  getBrands, 
+  getModels, 
+  getYears, 
+  getVehicleInfo 
 } from './vehicle/fipeAPI';
 
 // Re-export everything for easier imports
 export {
   getStates,
   getCities,
-  getFipeBrands,
-  getFipeModels,
-  getFipeYears,
-  getFipeInfo,
+  getBrands,
+  getModels,
+  getYears,
+  getVehicleInfo,
   
   // Compatibility layer
   fetchStates,
