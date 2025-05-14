@@ -26,7 +26,9 @@ export const getBrands = async (vehicleType = 'carros'): Promise<VehicleBrand[]>
  */
 export const getModels = async (brandId: string, vehicleType = 'carros'): Promise<VehicleModel[]> => {
   try {
+    console.log(`Fetching models for brand ID: ${brandId}`);
     const response = await axios.get(`${FIPE_API_URL}/${vehicleType}/marcas/${brandId}/modelos`);
+    console.log('Models API response:', response.data);
     return response.data.modelos || [];
   } catch (error) {
     console.error(`Error fetching models for brand ${brandId}:`, error);

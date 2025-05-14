@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   getBrands, 
@@ -98,8 +99,9 @@ export const useFipeData = ({
     
     setLoadingModels(true);
     try {
+      console.log("Loading models for brand ID:", brandId);
       const modelsData = await getModels(brandId);
-      console.log("Loaded models:", modelsData);
+      console.log("Loaded models in useFipeData:", modelsData);
       
       if (modelsData.length > 0) {
         setModels(modelsData);
@@ -302,3 +304,5 @@ export const useFipeData = ({
     handleYearChange
   };
 };
+
+export default useFipeData;

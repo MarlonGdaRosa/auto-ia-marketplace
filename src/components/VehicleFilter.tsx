@@ -61,7 +61,13 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
 
   const { data: models = [], isLoading: isLoadingModels } = useQuery({
     queryKey: ['models', selectedBrand],
-    queryFn: () => selectedBrand && selectedBrand !== "all" ? getModels(selectedBrand) : Promise.resolve([]),
+    queryFn: () => {
+      console.log("Query function called with selectedBrand:", selectedBrand);
+      if (!selectedBrand || selectedBrand === "all") {
+        return Promise.resolve([]);
+      }
+      return getModels(selectedBrand);
+    },
     enabled: !!selectedBrand && selectedBrand !== "all"
   });
 
@@ -90,10 +96,16 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     if (initialFilters.brand && brands && brands.length > 0) {
       const brandItem = brands.find((b: any) => b.nome === initialFilters.brand);
       if (brandItem) {
+        console.log("Setting initial brand ID:", brandItem.id);
         setSelectedBrand(brandItem.id);
       }
     }
   }, [initialFilters, brands]);
+
+  useEffect(() => {
+    console.log("Selected brand changed to:", selectedBrand);
+    console.log("Models data:", models);
+  }, [selectedBrand, models]);
 
   const handleFilterChange = (
     key: keyof FilterOptions,
@@ -119,7 +131,12 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
       newFilters.model = undefined; // Reset model when brand changes
       if (brands && brands.length > 0) {
         const brandItem = brands.find((b: any) => b.nome === value);
-        setSelectedBrand(brandItem?.id || "");
+        if (brandItem) {
+          console.log("Setting selected brand ID from handleFilterChange:", brandItem.id);
+          setSelectedBrand(brandItem?.id || "");
+        } else {
+          setSelectedBrand("");
+        }
       }
     }
 
@@ -237,16 +254,31 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
               onValueChange={(value) => handleFilterChange("model", value === "all" ? undefined : value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Todos os modelos" />
+                <SelectValue placeholder={isLoadingModels ? "Carregando modelos..." : "Todos os modelos"} />
+                {isLoadingModels && (
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                )}
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos os modelos</SelectItem>
-                  {Array.isArray(models) && models.map((model: any) => (
-                    <SelectItem key={model.id} value={model.nome}>
-                      {model.nome}
+                  {isLoadingModels ? (
+                    <SelectItem value="loading" disabled>
+                      Carregando modelos...
                     </SelectItem>
-                  ))}
+                  ) : Array.isArray(models) && models.length > 0 ? (
+                    models.map((model: any) => (
+                      <SelectItem key={model.id} value={model.nome}>
+                        {model.nome}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="empty" disabled>
+                      Nenhum modelo encontrado
+                    </SelectItem>
+                  )}
                 </SelectGroup>
               </SelectContent>
             </Select>

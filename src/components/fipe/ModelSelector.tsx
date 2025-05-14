@@ -37,7 +37,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
         disabled={isLoading || models.length === 0}
       >
         <SelectTrigger id="model" className="relative">
-          <SelectValue placeholder={isBrandSelected ? "Selecione o modelo" : "Selecione a marca primeiro"} />
+          <SelectValue placeholder={isBrandSelected ? (isLoading ? "Carregando modelos..." : "Selecione o modelo") : "Selecione a marca primeiro"} />
           {isLoading && (
             <div className="absolute right-8 top-1/2 -translate-y-1/2">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -53,7 +53,7 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
             ))
           ) : (
             <SelectItem value="empty" disabled>
-              {isBrandSelected ? "Nenhum modelo encontrado" : "Selecione uma marca primeiro"}
+              {isBrandSelected ? (isLoading ? "Carregando modelos..." : "Nenhum modelo encontrado") : "Selecione uma marca primeiro"}
             </SelectItem>
           )}
         </SelectContent>
