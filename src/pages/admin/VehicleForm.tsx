@@ -21,7 +21,6 @@ const VehicleForm: React.FC = () => {
   const { toast } = useToast();
   const isEditing = !!id;
 
-  // Use our custom hook for form state management
   const {
     formData,
     setFormData,
@@ -34,36 +33,24 @@ const VehicleForm: React.FC = () => {
     isSubmitting,
     handleFileChange,
     removeImage,
-    reorderImages,
     isLoadingVehicle,
-    error
+    existingVehicle,
   } = useVehicleForm({ vehicleId: id });
 
-  // Load sellers for assignment
-  const { data: sellers = [] } = useQuery({
+  const { data: sellers, isLoading: isLoadingSellers } = useQuery<Seller[]>({
     queryKey: ["sellers"],
-    queryFn: getSellers
+    queryFn: getSellers,
   });
 
-  // Show loading state while fetching vehicle data
-  if (isEditing && isLoadingVehicle) {
-    return <VehicleFormLoading isEditMode={isEditing} />;
-  }
-
-  // Handle fetch error
-  if (error) {
-    toast({
-      variant: "destructive",
-      title: "Erro ao carregar veículo",
-      description: "Não foi possível carregar os dados do veículo."
-    });
+  if (isEditing && (isLoadingVehicle || !existingVehicle || isLoadingSellers)) {
+    return <VehicleFormLoading />;
   }
 
   return (
-    <AdminLayout title={isEditing ? "Editar Veículo" : "Novo Veículo"}>
-      <form onSubmit={handleSubmit}>
-        <Tabs defaultValue="basic" className="mb-8">
-          <TabsList className="grid grid-cols-5 mb-8">
+    <AdminLayout>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="basic">
+          <TabsList className="mb-4">
             <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
             <TabsTrigger value="specs">Especificações</TabsTrigger>
             <TabsTrigger value="features">Características</TabsTrigger>
@@ -71,66 +58,50 @@ const VehicleForm: React.FC = () => {
             <TabsTrigger value="images">Imagens</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-6">
-            <VehicleBasicInfoForm 
+          <TabsContent value="basic">
+            <VehicleBasicInfoForm
               formData={formData}
-              handlePriceChange={(value) => handleSelectChange("price", value || "0")}
-              handleMileageChange={(value) => handleSelectChange("mileage", value || "0")}
+              handlePriceChange={(value) => handleSelectChange("price", Number(value))}
+              handleMileageChange={(value) => handleSelectChange("mileage", Number(value))}
               handleSelectChange={handleSelectChange}
               handleStateChange={handleStateChange}
               handleCityChange={handleCityChange}
-              sellers={sellers}
+              sellers={sellers || []}
             />
           </TabsContent>
-          
-          <TabsContent value="specs" className="space-y-6">
-            <VehicleSpecsForm 
+
+          <TabsContent value="specs">
+            <VehicleSpecsForm
               formData={formData}
+              handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
-              sellers={sellers}
             />
           </TabsContent>
-          
-          <TabsContent value="features" className="space-y-6">
+
+          <TabsContent value="features">
             <VehicleFeaturesForm
               formData={formData}
-              handleFeatureChange={(e, feature) => {
-                const currentFeatures = formData.features || [];
-                if (e.target.checked) {
-                  setFormData({
-                    ...formData,
-                    features: [...currentFeatures, feature]
-                  });
-                } else {
-                  setFormData({
-                    ...formData,
-                    features: currentFeatures.filter(f => f !== feature)
-                  });
-                }
-              }}
+              handleSelectChange={handleSelectChange}
             />
           </TabsContent>
-          
-          <TabsContent value="description" className="space-y-6">
+
+          <TabsContent value="description">
             <VehicleDescriptionForm
               formData={formData}
-              handleChange={handleInputChange}
+              handleInputChange={handleInputChange}
             />
           </TabsContent>
-          
-          <TabsContent value="images" className="space-y-6">
+
+          <TabsContent value="images">
             <VehicleImagesForm
               formData={formData}
-              handleImageUpload={(e) => handleFileChange(e.target.files)}
-              handleRemoveImage={removeImage}
+              handleFileChange={handleFileChange}
+              removeImage={removeImage}
             />
           </TabsContent>
         </Tabs>
-        
-        <VehicleFormActions
-          loading={isSubmitting}
-          isEditMode={isEditing}
-        />
+
+        <VehicleFormActions isSubmitting={isSubmitting} onCancel={() => navigate("/admin/vehicles")} />
       </form>
     </AdminLayout>
   );
