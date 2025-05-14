@@ -1,4 +1,3 @@
-
 import { useVehicleFormImplementation } from "./vehicle-form/useVehicleFormImplementation";
 import { Vehicle } from "@/types";
 import { getVehicleById } from "@/services/supabaseService";
@@ -12,8 +11,8 @@ export interface UseVehicleFormOptions {
 
 export const useVehicleForm = (options?: UseVehicleFormOptions) => {
   const { vehicleId, initialData } = options || {};
-  
-  // Load existing vehicle data if we have a vehicleId
+
+  // Carrega o veículo se houver vehicleId
   const {
     data: existingVehicle,
     isLoading,
@@ -23,19 +22,23 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
     queryFn: () => vehicleId ? getVehicleById(vehicleId) : null,
     enabled: !!vehicleId && !initialData,
   });
-  
-  // Use the main implementation
+
+  // Só inicializa o formulário quando os dados estiverem prontos
+  const shouldInitialize =
+    !vehicleId || !!initialData || (!!existingVehicle && !isLoading);
+
+  // Só chama o hook de implementação quando os dados estão prontos
   const vehicleForm = useVehicleFormImplementation({
     initialData: initialData || existingVehicle
   });
 
-  // Get additional form handlers
+  // Handlers extras
   const { handleStateChange, handleCityChange } = useVehicleFormHandlers(
-    vehicleForm.formData, 
+    vehicleForm.formData,
     vehicleForm.setFormData
   );
 
-  // Modify the handleSubmit to accept and process the form event
+  // handleSubmit adaptado
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
@@ -48,7 +51,7 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
     handleSubmit,
     handleStateChange,
     handleCityChange,
-    isLoadingVehicle: isLoading,
+    isLoadingVehicle: isLoading || !shouldInitialize,
     error,
     existingVehicle: initialData || existingVehicle
   };
