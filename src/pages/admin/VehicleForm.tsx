@@ -42,7 +42,15 @@ const VehicleForm: React.FC = () => {
     queryFn: getSellers,
   });
 
-  if (isEditing && (isLoadingVehicle || !existingVehicle || isLoadingSellers)) {
+  if (
+    isEditing &&
+    (isLoadingVehicle ||
+      !existingVehicle ||
+      isLoadingSellers ||
+      !sellers ||
+      !formData ||
+      Object.keys(formData).length === 0)
+  ) {
     return <VehicleFormLoading />;
   }
 
