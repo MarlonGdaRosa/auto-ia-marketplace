@@ -23,7 +23,8 @@ export interface Vehicle {
 }
 
 export interface Seller {
-  id: string;
+  id_seller: string; // Added primary key field
+  id?: string; // Made optional, as it may be null
   name: string;
   phone: string;
   email?: string;

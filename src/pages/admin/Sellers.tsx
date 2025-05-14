@@ -39,6 +39,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getStates, getCities } from "@/services/vehicleAPI";
+import { IBGEState, IBGECity } from "@/services/vehicle/types";
+
+// Phone mask utility function
+const applyPhoneMask = (value: string): string => {
+  if (!value) return '';
+  
+  // Remove non-digit characters
+  const numericValue = value.replace(/\D/g, '');
+  
+  // Apply mask (99) 99999-9999
+  if (numericValue.length <= 11) {
+    if (numericValue.length <= 2) {
+      return numericValue;
+    }
+    if (numericValue.length <= 7) {
+      return `(${numericValue.slice(0, 2)}) ${numericValue.slice(2)}`;
+    }
+    return `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`;
+  }
+  
+  return `(${numericValue.slice(0, 2)}) ${numericValue.slice(2, 7)}-${numericValue.slice(7, 11)}`;
+};
 
 const Sellers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -50,7 +73,44 @@ const Sellers: React.FC = () => {
     state: "",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [states, setStates] = useState<IBGEState[]>([]);
+  const [cities, setCities] = useState<IBGECity[]>([]);
   const queryClient = useQueryClient();
+
+  // Fetch states when component mounts
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const statesData = await getStates();
+        setStates(statesData);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+        toast.error("Erro ao carregar estados");
+      }
+    };
+    
+    fetchStates();
+  }, []);
+
+  // Fetch cities when state changes
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (!formData.state) {
+        setCities([]);
+        return;
+      }
+      
+      try {
+        const citiesData = await getCities(formData.state);
+        setCities(citiesData);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        toast.error("Erro ao carregar cidades");
+      }
+    };
+    
+    fetchCities();
+  }, [formData.state]);
 
   const { data: sellers = [], isLoading, error } = useQuery({
     queryKey: ["sellers"],
@@ -79,6 +139,7 @@ const Sellers: React.FC = () => {
   const deleteSellerMutation = useMutation({
     mutationFn: deleteSeller,
     onSuccess: () => {
+      toast.success("Vendedor excluído com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["sellers"] });
     },
     onError: (error: any) => {
@@ -88,15 +149,34 @@ const Sellers: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    if (name === 'phone') {
+      setFormData((prev) => ({ ...prev, [name]: applyPhoneMask(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    createSellerMutation.mutate(formData);
+    
+    // Validate form
+    if (!formData.name || !formData.phone || !formData.city || !formData.state) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    
+    // Remove mask from phone before sending to API
+    const submissionData = {
+      ...formData,
+      phone: formData.phone.replace(/\D/g, '')
+    };
+    
+    createSellerMutation.mutate(submissionData);
   };
 
   const handleDelete = (id: string) => {
+    console.log("Deleting seller with ID:", id);
     deleteSellerMutation.mutate(id);
   };
 
@@ -167,6 +247,7 @@ const Sellers: React.FC = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
+                      placeholder="(99) 99999-9999"
                       required
                     />
                   </div>
@@ -183,16 +264,6 @@ const Sellers: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city">Cidade</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="state">Estado</Label>
                     <select
                       id="state"
@@ -203,12 +274,30 @@ const Sellers: React.FC = () => {
                       required
                     >
                       <option value="">Selecione</option>
-                      <option value="SP">São Paulo</option>
-                      <option value="RJ">Rio de Janeiro</option>
-                      <option value="MG">Minas Gerais</option>
-                      <option value="PR">Paraná</option>
-                      <option value="SC">Santa Catarina</option>
-                      <option value="RS">Rio Grande do Sul</option>
+                      {states.map((state) => (
+                        <option key={state.id} value={state.sigla}>
+                          {state.nome}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Cidade</Label>
+                    <select
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      disabled={!formData.state || cities.length === 0}
+                      required
+                    >
+                      <option value="">Selecione</option>
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.nome}>
+                          {city.nome}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -255,7 +344,7 @@ const Sellers: React.FC = () => {
             </TableHeader>
             <TableBody>
               {filteredSellers.map((seller) => (
-                <TableRow key={seller.id}>
+                <TableRow key={seller.id_seller}>
                   <TableCell>{seller.name}</TableCell>
                   <TableCell>{formatPhone(seller.phone)}</TableCell>
                   <TableCell>{seller.city}</TableCell>
@@ -298,7 +387,7 @@ const Sellers: React.FC = () => {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => handleDelete(seller.id)}
+                              onClick={() => handleDelete(seller.id_seller)}
                               className="bg-red-600"
                             >
                               Excluir

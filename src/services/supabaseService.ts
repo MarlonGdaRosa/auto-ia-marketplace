@@ -162,12 +162,16 @@ export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) =
 
 export const deleteVehicle = async (id: string) => {
   try {
+    console.log('Deleting vehicle with ID:', id);
     const { error } = await supabase
       .from('vehicles')
       .delete()
       .eq('id', id);
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error in delete query:', error);
+      throw error;
+    }
     
     toast.success("Veículo excluído com sucesso!");
     return true;
@@ -201,7 +205,7 @@ export const getSellerById = async (id: string) => {
     const { data, error } = await supabase
       .from('sellers')
       .select('*')
-      .eq('id', id)
+      .eq('id_seller', id) // Changed from id to id_seller
       .single();
       
     if (error) throw error;
@@ -216,13 +220,10 @@ export const getSellerById = async (id: string) => {
 
 export const createSeller = async (sellerData: Partial<Seller>) => {
   try {
-    // Generate a UUID for the id field using our browser-compatible function
-    const sellerId = generateUUID();
-    
+    // Since we're using id_seller as the primary key now
     const { data: newSeller, error } = await supabase
       .from('sellers')
       .insert({
-        id: sellerId,
         name: sellerData.name || '',
         phone: sellerData.phone || '',
         email: sellerData.email,
@@ -232,7 +233,10 @@ export const createSeller = async (sellerData: Partial<Seller>) => {
       .select()
       .single();
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error in createSeller:', error);
+      throw error;
+    }
     
     toast.success(`${newSeller.name} cadastrado com sucesso!`);
     return newSeller as Seller;
@@ -248,7 +252,7 @@ export const updateSeller = async (id: string, sellerData: Partial<Seller>) => {
     const { data, error } = await supabase
       .from('sellers')
       .update(sellerData)
-      .eq('id', id)
+      .eq('id_seller', id) // Changed from id to id_seller
       .select()
       .single();
       
@@ -265,12 +269,16 @@ export const updateSeller = async (id: string, sellerData: Partial<Seller>) => {
 
 export const deleteSeller = async (id: string) => {
   try {
+    console.log('Deleting seller with ID:', id);
     const { error } = await supabase
       .from('sellers')
       .delete()
-      .eq('id', id);
+      .eq('id_seller', id); // Changed from id to id_seller
       
-    if (error) throw error;
+    if (error) {
+      console.error('Error in deleteSeller:', error);
+      throw error;
+    }
     
     toast.success("Vendedor excluído com sucesso!");
     return true;
@@ -427,33 +435,58 @@ export const deleteProposal = async (id: string) => {
 // Dashboard Statistics
 export const getDashboardStats = async () => {
   try {
+    // Use real data from Supabase instead of mocks
     const { data: vehicles, error: vehiclesError } = await supabase
       .from('vehicles')
-      .select('status');
+      .select('id, brand, status');
     
     if (vehiclesError) throw vehiclesError;
     
     const { data: proposals, error: proposalsError } = await supabase
       .from('proposals')
-      .select('status');
+      .select('id, status');
     
     if (proposalsError) throw proposalsError;
     
+    // Calculate actual statistics
     const totalVehicles = vehicles.length;
-    const availableVehicles = vehicles.filter(v => v.status === 'available').length;
     const soldVehicles = vehicles.filter(v => v.status === 'sold').length;
+    const reservedVehicles = vehicles.filter(v => v.status === 'reserved').length;
     const totalProposals = proposals.length;
     const pendingProposals = proposals.filter(p => p.status === 'pending').length;
-    const acceptedProposals = proposals.filter(p => p.status === 'accepted').length;
+    const contactedProposals = proposals.filter(p => p.status === 'contacted').length;
+    const closedProposals = proposals.filter(p => p.status === 'closed').length;
+    
+    // Find top brand
+    const brandCounts = vehicles.reduce((counts: Record<string, number>, vehicle) => {
+      const brand = vehicle.brand;
+      counts[brand] = (counts[brand] || 0) + 1;
+      return counts;
+    }, {});
+    
+    let topBrandName = '';
+    let topBrandCount = 0;
+    
+    Object.entries(brandCounts).forEach(([brand, count]) => {
+      if (count > topBrandCount) {
+        topBrandName = brand;
+        topBrandCount = count;
+      }
+    });
     
     return {
       totalVehicles,
-      availableVehicles,
       soldVehicles,
+      reservedVehicles,
       totalProposals,
       pendingProposals,
-      acceptedProposals,
-      conversionRate: totalVehicles > 0 ? (soldVehicles / totalVehicles) * 100 : 0,
+      contactedProposals,
+      closedProposals,
+      topBrand: {
+        name: topBrandName || 'Nenhuma',
+        count: topBrandCount
+      },
+      newProposals: pendingProposals
     };
   } catch (error: any) {
     console.error('Error getting dashboard stats:', error);
@@ -462,12 +495,17 @@ export const getDashboardStats = async () => {
     // Return zero values as fallback
     return {
       totalVehicles: 0,
-      availableVehicles: 0,
       soldVehicles: 0,
+      reservedVehicles: 0,
       totalProposals: 0,
       pendingProposals: 0,
-      acceptedProposals: 0,
-      conversionRate: 0,
+      contactedProposals: 0,
+      closedProposals: 0,
+      topBrand: {
+        name: 'Nenhuma',
+        count: 0
+      },
+      newProposals: 0
     };
   }
 }
