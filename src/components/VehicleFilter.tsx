@@ -75,13 +75,13 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     if (initialFilters.minPrice !== undefined || initialFilters.maxPrice !== undefined) {
       setPriceRange([
         initialFilters.minPrice || 0,
-        initialFilters.maxPrice || 500000
+        initialFilters.maxPrice || 2500000
       ]);
     }
     
     if (initialFilters.minYear !== undefined || initialFilters.maxYear !== undefined) {
       setYearRange([
-        initialFilters.minYear || 2010,
+        initialFilters.minYear || 1940,
         initialFilters.maxYear || new Date().getFullYear()
       ]);
     }

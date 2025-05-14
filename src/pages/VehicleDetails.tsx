@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -121,9 +122,16 @@ const VehicleDetails: React.FC = () => {
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="relative aspect-video">
                 <img
-                  src={vehicle.images?.[currentImageIndex] || "/placeholder.svg"}
+                  src={vehicle.images?.[currentImageIndex] || ""}
                   alt={`${vehicle.brand} ${vehicle.model} - Imagem ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none"; // Esconde a imagem quebrada
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent) {
+                      parent.innerHTML = '<div class="flex items-center justify-center w-full h-full bg-gray-100 text-gray-500">Sem imagem disponível</div>';
+                    }
+                  }}
                 />
                 {vehicle.images.length > 1 && (
                   <>
@@ -158,22 +166,22 @@ const VehicleDetails: React.FC = () => {
                     </div>
                   </>
                 )}
-                
-              {vehicle.status && vehicle.status !== "available" && (
-                <div className="absolute top-2 right-2">
-                  <Badge
-                    variant={vehicle.status === "sold" ? "destructive" : "secondary"}
-                    className={cn(
-                      "text-white py-1 px-3 text-sm",
-                      vehicle.status === "sold" 
-                        ? "bg-red-500" 
-                        : "bg-amber-500"
-                    )}
-                  >
-                    {vehicle.status === "sold" ? "Vendido" : "Reservado"}
-                  </Badge>
-                </div>
-              )}
+
+                {vehicle.status && vehicle.status !== "available" && (
+                  <div className="absolute top-2 right-2">
+                    <Badge
+                      variant={vehicle.status === "sold" ? "destructive" : "secondary"}
+                      className={cn(
+                        "text-white py-1 px-3 text-sm",
+                        vehicle.status === "sold" 
+                          ? "bg-red-500" 
+                          : "bg-amber-500"
+                      )}
+                    >
+                      {vehicle.status === "sold" ? "Vendido" : "Reservado"}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               {vehicle.images.length > 1 && (
@@ -206,10 +214,10 @@ const VehicleDetails: React.FC = () => {
               </h2>
               <div className="flex items-center text-gray-600 mb-4">
                 <MapPin className="h-4 w-4 mr-1" />
-              <span>
-                {vehicle.location?.city}, {vehicle.location?.state}
-                {vehicle.location?.region && ` - ${vehicle.location.region}`}
-              </span>
+                <span>
+                  {vehicle.location?.city}, {vehicle.location?.state}
+                  {vehicle.location?.region && ` - ${vehicle.location.region}`}
+                </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -243,12 +251,12 @@ const VehicleDetails: React.FC = () => {
 
               <h3 className="text-xl font-semibold mb-3">Características</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
-              {vehicle.features?.map((feature, idx) => (
-                <div key={idx} className="flex items-center">
-                  <Check className="h-4 w-4 text-brand-blue mr-2" />
-                  <span>{feature}</span>
-                </div>
-              ))}
+                {vehicle.features?.map((feature, idx) => (
+                  <div key={idx} className="flex items-center">
+                    <Check className="h-4 w-4 text-brand-blue mr-2" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
 
               <Separator className="my-6" />
@@ -272,7 +280,7 @@ const VehicleDetails: React.FC = () => {
               <div className="space-y-3">
                 <ProposalForm vehicle={vehicle} buttonVariant="default" buttonFullWidth />
                 
-                {/* WhatsApp button */}
+                {/* WhatsApp button
                 <Button variant="outline" className="w-full bg-green-50 border-green-300 text-green-700 hover:bg-green-100">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -289,7 +297,7 @@ const VehicleDetails: React.FC = () => {
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                   </svg>
                   Conversar via WhatsApp
-                </Button>
+                </Button>*/}
               </div>
             </div>
 
