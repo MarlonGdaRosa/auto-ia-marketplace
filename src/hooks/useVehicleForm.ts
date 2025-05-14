@@ -1,15 +1,16 @@
 
-import { useVehicleForm as useVehicleFormImplementation } from "./vehicle-form";
+import { useVehicleFormImplementation } from "./vehicle-form";
 import { Vehicle } from "@/types";
 import { getVehicleById } from "@/services/supabaseService";
 import { useQuery } from "@tanstack/react-query";
 
-interface UseVehicleFormOptions {
+export interface UseVehicleFormOptions {
   vehicleId?: string;
+  initialData?: Vehicle;
 }
 
 export const useVehicleForm = (options?: UseVehicleFormOptions) => {
-  const { vehicleId } = options || {};
+  const { vehicleId, initialData } = options || {};
   
   // Load existing vehicle data if we have a vehicleId
   const {
@@ -19,19 +20,19 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
   } = useQuery({
     queryKey: ["vehicle", vehicleId],
     queryFn: () => vehicleId ? getVehicleById(vehicleId) : null,
-    enabled: !!vehicleId,
+    enabled: !!vehicleId && !initialData,
   });
   
   // Use the main implementation
   const vehicleForm = useVehicleFormImplementation({
-    initialData: existingVehicle || undefined
+    initialData: initialData || existingVehicle
   });
 
   return {
     ...vehicleForm,
     isLoadingVehicle: isLoading,
     error,
-    existingVehicle
+    existingVehicle: initialData || existingVehicle
   };
 };
 

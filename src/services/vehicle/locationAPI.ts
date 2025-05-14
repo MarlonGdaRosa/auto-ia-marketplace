@@ -47,3 +47,16 @@ export const fetchCitiesByState = async (stateId: number): Promise<IBGECity[]> =
     return [];
   }
 };
+
+// These are the functions that will be exported as getStates and getCities
+export const getStates = fetchStates;
+export const getCities = async (stateId: number | string): Promise<IBGECity[]> => {
+  // If stateId is provided as a string (state code), we need to find the corresponding ID
+  if (typeof stateId === 'string') {
+    const states = await fetchStates();
+    const state = states.find(s => s.sigla === stateId);
+    if (!state) return [];
+    return fetchCitiesByState(state.id);
+  }
+  return fetchCitiesByState(stateId);
+};

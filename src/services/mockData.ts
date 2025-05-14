@@ -1,346 +1,160 @@
+import { Vehicle, Seller } from "@/types";
 
-import { Vehicle, Seller, Proposal, DashboardStats } from "@/types";
-
-// Mock vehicles
-export const vehicles: Vehicle[] = [
+export const mockVehicles: Vehicle[] = [
   {
     id: "1",
     brand: "Toyota",
     model: "Corolla",
-    year: 2022,
-    price: 120000,
-    mileage: 15000,
+    year: 2020,
+    mileage: 50000,
+    price: 85000,
+    city: "São Paulo",
+    state: "SP",
     transmission: "automatic",
     fuel: "flex",
-    location: {
-      state: "SP",
-      city: "São Paulo",
-      region: "Zona Sul"
-    },
-    features: ["Ar condicionado", "Direção hidráulica", "Vidros elétricos", "Travas elétricas", "Airbag", "ABS"],
-    description: "Toyota Corolla 2022 em excelente estado. Único dono, revisões em dia na concessionária. Veículo econômico e confortável, ideal para família.",
+    description: "Sedan em ótimo estado, ideal para a família.",
     images: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000",
-      "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
-    status: "available",
-    created_at: "2023-04-15T10:30:00Z",
-    updated_at: "2023-04-15T10:30:00Z",
-    seller_id: "1"
+    features: ["Ar condicionado", "Direção hidráulica", "Vidros elétricos"],
+    is_new: false,
+    created_at: "2023-08-01T10:00:00.000Z",
+    seller_id: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
   },
   {
     id: "2",
     brand: "Honda",
     model: "Civic",
-    year: 2021,
-    price: 115000,
-    mileage: 25000,
+    year: 2022,
+    mileage: 30000,
+    price: 95000,
+    city: "Rio de Janeiro",
+    state: "RJ",
     transmission: "automatic",
     fuel: "flex",
-    location: {
-      state: "SP",
-      city: "Campinas",
-      region: "Centro"
-    },
-    features: ["Ar condicionado", "Direção elétrica", "Vidros elétricos", "Travas elétricas", "Airbag", "ABS", "Câmera de ré"],
-    description: "Honda Civic 2021 em ótimo estado de conservação. Completo, com câmera de ré e central multimídia. Documentação em dia.",
+    description: "Carro completo, com baixa quilometragem.",
     images: [
-      "https://images.unsplash.com/photo-1590080962330-747c6aba8035?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228d88c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
-    status: "available",
-    created_at: "2023-05-20T14:45:00Z",
-    updated_at: "2023-05-20T14:45:00Z",
-    seller_id: "2"
+    features: ["Ar condicionado", "Direção elétrica", "Câmera de ré"],
+    is_new: false,
+    created_at: "2023-08-05T14:30:00.000Z",
+    seller_id: "3f0d0edf-b96c-4c7a-b297-85da5726dc5a",
   },
   {
     id: "3",
-    brand: "Volkswagen",
-    model: "Gol",
-    year: 2020,
-    price: 62000,
-    mileage: 45000,
+    brand: "Fiat",
+    model: "Argo",
+    year: 2021,
+    mileage: 40000,
+    price: 65000,
+    city: "Belo Horizonte",
+    state: "MG",
     transmission: "manual",
     fuel: "flex",
-    location: {
-      state: "RJ",
-      city: "Rio de Janeiro",
-      region: "Zona Norte"
-    },
-    features: ["Ar condicionado", "Direção hidráulica", "Vidros elétricos", "Travas elétricas"],
-    description: "Volkswagen Gol 2020 econômico e em excelente estado. Carro ideal para o dia a dia na cidade. Manutenção em dia e pneus novos.",
+    description: "Hatchback compacto, ideal para o dia a dia.",
     images: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
-    status: "available",
-    created_at: "2023-06-05T09:15:00Z",
-    updated_at: "2023-06-05T09:15:00Z",
-    seller_id: "3"
+    features: ["Ar condicionado", "Direção hidráulica", "Travas elétricas"],
+    is_new: false,
+    created_at: "2023-08-10T09:00:00.000Z",
+    seller_id: "2bf4d8e1-5a15-4cb4-9cc9-5f7c494da8a9",
   },
   {
     id: "4",
-    brand: "Fiat",
-    model: "Strada",
-    year: 2021,
-    price: 85000,
-    mileage: 30000,
+    brand: "Volkswagen",
+    model: "Gol",
+    year: 2019,
+    mileage: 60000,
+    price: 55000,
+    city: "Curitiba",
+    state: "PR",
     transmission: "manual",
     fuel: "flex",
-    location: {
-      state: "MG",
-      city: "Belo Horizonte",
-      region: "Centro"
-    },
-    features: ["Ar condicionado", "Direção hidráulica", "Vidros elétricos", "Travas elétricas", "Airbag", "ABS"],
-    description: "Fiat Strada 2021 em perfeito estado. Veículo ideal para trabalho e lazer. Capacidade de carga excelente e muito conforto.",
+    description: "Carro popular, econômico e confiável.",
     images: [
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228d88c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
-    status: "available",
-    created_at: "2023-03-12T11:20:00Z",
-    updated_at: "2023-03-12T11:20:00Z",
-    seller_id: "4"
+    features: ["Ar condicionado", "Direção hidráulica", "Alarme"],
+    is_new: false,
+    created_at: "2023-08-15T16:15:00.000Z",
+    seller_id: "8d3e9f2a-6c5b-4a7d-8e9f-0a1b2c3d4e5f",
   },
   {
     id: "5",
-    brand: "Chevrolet",
-    model: "Onix",
-    year: 2021,
-    price: 72000,
-    mileage: 22000,
-    transmission: "manual",
-    fuel: "flex",
-    location: {
-      state: "SP",
-      city: "São Paulo",
-      region: "Zona Oeste"
-    },
-    features: ["Ar condicionado", "Direção elétrica", "Vidros elétricos", "Travas elétricas", "Airbag", "ABS", "Central multimídia"],
-    description: "Chevrolet Onix 2021 completo, com central multimídia e conectividade com smartphone. Carro econômico e confortável para uso urbano.",
-    images: [
-      "https://images.unsplash.com/photo-1590080962330-747c6aba8035?auto=format&fit=crop&q=80&w=1000",
-    ],
-    status: "sold",
-    created_at: "2023-02-28T15:40:00Z",
-    updated_at: "2023-07-10T09:30:00Z",
-    seller_id: "1"
-  },
-  {
-    id: "6",
     brand: "Hyundai",
     model: "HB20",
-    year: 2022,
+    year: 2023,
+    mileage: 10000,
     price: 75000,
-    mileage: 18000,
+    city: "Porto Alegre",
+    state: "RS",
     transmission: "automatic",
     fuel: "flex",
-    location: {
-      state: "RJ",
-      city: "Niterói",
-      region: "Centro"
-    },
-    features: ["Ar condicionado", "Direção elétrica", "Vidros elétricos", "Travas elétricas", "Airbag", "ABS", "Câmera de ré"],
-    description: "Hyundai HB20 2022 automático, completo e com baixa quilometragem. Carro em excelente estado, econômico e com ótimo custo-benefício.",
+    description: "Hatchback moderno, com design atraente.",
     images: [
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1000",
+      "https://images.unsplash.com/photo-1605559424843-9e4c228d88c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+      "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
-    status: "reserved",
-    created_at: "2023-04-02T13:15:00Z",
-    updated_at: "2023-08-15T16:20:00Z",
-    seller_id: "2"
-  }
+    features: ["Ar condicionado", "Direção elétrica", "Central multimídia"],
+    is_new: true,
+    created_at: "2023-08-20T11:45:00.000Z",
+    seller_id: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
+  },
 ];
 
-// Mock sellers
-export const sellers: Seller[] = [
+export const mockSellers: Seller[] = [
   {
-    id: "1",
-    name: "Carlos Oliveira",
-    phone: "11999887766",
+    id_seller: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
+    id: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
+    name: "João Silva",
+    phone: "11987654321",
     city: "São Paulo",
     state: "SP",
-    email: "carlos@example.com",
-    created_at: "2023-01-15T10:00:00Z"
+    email: "joao.silva@example.com",
+    created_at: "2023-06-10T10:30:00.000Z"
   },
   {
-    id: "2",
-    name: "Ana Silva",
-    phone: "21999887755",
+    id_seller: "3f0d0edf-b96c-4c7a-b297-85da5726dc5a",
+    id: "3f0d0edf-b96c-4c7a-b297-85da5726dc5a",
+    name: "Maria Oliveira",
+    phone: "21976543210",
     city: "Rio de Janeiro",
     state: "RJ",
-    email: "ana@example.com",
-    created_at: "2023-02-20T14:30:00Z"
+    email: "maria.oliveira@example.com",
+    created_at: "2023-06-15T14:20:00.000Z"
   },
   {
-    id: "3",
-    name: "Roberto Santos",
-    phone: "31999887744",
+    id_seller: "2bf4d8e1-5a15-4cb4-9cc9-5f7c494da8a9",
+    id: "2bf4d8e1-5a15-4cb4-9cc9-5f7c494da8a9",
+    name: "Carlos Pereira",
+    phone: "31965432109",
     city: "Belo Horizonte",
     state: "MG",
-    email: "roberto@example.com",
-    created_at: "2023-03-10T09:45:00Z"
+    email: "carlos.pereira@example.com",
+    created_at: "2023-06-20T09:15:00.000Z"
   },
   {
-    id: "4",
-    name: "Fernanda Lima",
-    phone: "19999887733",
-    city: "Campinas",
-    state: "SP",
-    email: "fernanda@example.com",
-    created_at: "2023-04-05T11:20:00Z"
+    id_seller: "8d3e9f2a-6c5b-4a7d-8e9f-0a1b2c3d4e5f",
+    id: "8d3e9f2a-6c5b-4a7d-8e9f-0a1b2c3d4e5f",
+    name: "Ana Costa",
+    phone: "41954321098",
+    city: "Curitiba",
+    state: "PR",
+    email: "ana.costa@example.com",
+    created_at: "2023-06-25T16:45:00.000Z"
   }
 ];
 
-// Mock proposals
-export const proposals: Proposal[] = [
-  {
-    id: "1",
-    vehicle_id: "1",
-    vehicle: {
-      id: "1",
-      brand: "Toyota",
-      model: "Corolla",
-      year: 2022
-    },
-    name: "João da Silva",
-    email: "joao@example.com",
-    phone: "11987654321",
-    message: "Olá, tenho interesse no Toyota Corolla 2022. Gostaria de agendar uma visita para ver o veículo.",
-    status: "pending",
-    created_at: "2023-08-10T14:30:00Z"
-  },
-  {
-    id: "2",
-    vehicle_id: "2",
-    vehicle: {
-      id: "2",
-      brand: "Honda",
-      model: "Civic",
-      year: 2021
-    },
-    name: "Maria Souza",
-    email: "maria@example.com",
-    phone: "21987654321",
-    message: "Olá, gostaria de saber se o preço do Honda Civic 2021 é negociável. Tenho interesse.",
-    status: "contacted",
-    created_at: "2023-08-12T10:15:00Z"
-  },
-  {
-    id: "3",
-    vehicle_id: "3",
-    vehicle: {
-      id: "3",
-      brand: "Volkswagen",
-      model: "Gol",
-      year: 2020
-    },
-    name: "Pedro Santos",
-    email: "pedro@example.com",
-    phone: "31987654321",
-    message: "Tenho interesse no Volkswagen Gol 2020. O carro está com todas as revisões em dia?",
-    status: "pending",
-    created_at: "2023-08-15T16:45:00Z"
-  },
-  {
-    id: "4",
-    vehicle_id: "4",
-    vehicle: {
-      id: "4",
-      brand: "Fiat",
-      model: "Strada",
-      year: 2021
-    },
-    name: "Luciana Ferreira",
-    email: "luciana@example.com",
-    phone: "11987654322",
-    message: "Olá, gostaria de fazer uma proposta para o Fiat Strada 2021. Vocês aceitam financiamento?",
-    status: "closed",
-    created_at: "2023-08-18T09:30:00Z"
-  }
-];
-
-// Mock dashboard stats
-export const dashboardStats: DashboardStats = {
-  totalVehicles: 152,
-  soldVehicles: 45,
-  reservedVehicles: 18,
-  totalProposals: 87,
-  pendingProposals: 32,
-  contactedProposals: 38,
-  closedProposals: 17,
-  topBrand: {
-    name: "Toyota",
-    count: 27
-  },
-  newProposals: 15
-};
-
-// Get vehicles with filtering
-export const getVehicles = (filters?: any) => {
-  let filteredVehicles = [...vehicles];
-
-  if (filters) {
-    if (filters.brand) {
-      filteredVehicles = filteredVehicles.filter(v => v.brand === filters.brand);
-    }
-    
-    if (filters.model) {
-      filteredVehicles = filteredVehicles.filter(v => v.model.toLowerCase().includes(filters.model.toLowerCase()));
-    }
-    
-    if (filters.state) {
-      filteredVehicles = filteredVehicles.filter(v => v.location.state === filters.state);
-    }
-    
-    if (filters.city) {
-      filteredVehicles = filteredVehicles.filter(v => v.location.city === filters.city);
-    }
-    
-    if (filters.region) {
-      filteredVehicles = filteredVehicles.filter(v => v.location.region === filters.region);
-    }
-    
-    if (filters.minPrice !== undefined) {
-      filteredVehicles = filteredVehicles.filter(v => v.price >= filters.minPrice);
-    }
-    
-    if (filters.maxPrice !== undefined) {
-      filteredVehicles = filteredVehicles.filter(v => v.price <= filters.maxPrice);
-    }
-    
-    if (filters.minYear !== undefined) {
-      filteredVehicles = filteredVehicles.filter(v => v.year >= filters.minYear);
-    }
-    
-    if (filters.maxYear !== undefined) {
-      filteredVehicles = filteredVehicles.filter(v => v.year <= filters.maxYear);
-    }
-    
-    if (filters.transmission) {
-      filteredVehicles = filteredVehicles.filter(v => v.transmission === filters.transmission);
-    }
-    
-    if (filters.fuel && filters.fuel.length > 0) {
-      filteredVehicles = filteredVehicles.filter(v => filters.fuel.includes(v.fuel));
-    }
-    
-    if (filters.search) {
-      const searchTerm = filters.search.toLowerCase();
-      filteredVehicles = filteredVehicles.filter(v => 
-        v.brand.toLowerCase().includes(searchTerm) || 
-        v.model.toLowerCase().includes(searchTerm)
-      );
-    }
-  }
-
-  return filteredVehicles;
-};
-
-// Get vehicle by ID
-export const getVehicleById = (id: string) => {
-  return vehicles.find(v => v.id === id);
-};
-
-// Get seller by ID
-export const getSellerById = (id: string) => {
-  return sellers.find(s => s.id === id);
+export const mockFilterOptions = {
+  brands: ["Toyota", "Honda", "Fiat", "Volkswagen", "Hyundai"],
+  years: [2019, 2020, 2021, 2022, 2023],
+  transmissions: ["manual", "automatic"],
+  fuels: ["flex"],
+  states: ["SP", "RJ", "MG", "PR", "RS"],
 };
