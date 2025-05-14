@@ -223,7 +223,8 @@ const Vehicles: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Imagem</TableHead>
+              {/* Remova esta linha */}
+              {/*<TableHead className="w-[100px]">Imagem</TableHead>*/}
               <TableHead
                 className="cursor-pointer hover:bg-gray-50"
                 onClick={() => handleSort("brand")}
@@ -318,7 +319,7 @@ const Vehicles: React.FC = () => {
             ) : (
               filteredVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
-                  <TableCell>
+                  {/*<TableCell>
                     <div className="h-12 w-16 overflow-hidden rounded-md">
                       <img
                         src={vehicle.images[0] || "/placeholder.svg"}
@@ -326,7 +327,7 @@ const Vehicles: React.FC = () => {
                         className="h-full w-full object-cover"
                       />
                     </div>
-                  </TableCell>
+                  </TableCell>*/}
                   <TableCell className="font-medium">{vehicle.brand}</TableCell>
                   <TableCell>{vehicle.model}</TableCell>
                   <TableCell>{vehicle.year}</TableCell>
