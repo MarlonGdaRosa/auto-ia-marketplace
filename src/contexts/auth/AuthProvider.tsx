@@ -1,21 +1,12 @@
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { fetchUserProfile } from "./userProfile";
 import { login, logout, register } from "./authMethods";
 import { User, AuthContextType } from "./types";
-
-const AuthContext = createContext<AuthContextType | null>(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+import { AuthContext } from "./AuthContext";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,21 +17,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize auth state and listen for changes
   useEffect(() => {
-    // Evitar inicialização dupla
+    // Avoid duplicate initialization
     if (authInitialized) return;
     
     const initializeAuth = async () => {
       try {
         console.log("Inicializando autenticação...");
         
-        // Set up auth state listener primeiro para evitar perder eventos
+        // Set up auth state listener first to avoid missing events
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, newSession) => {
             console.log("Auth state change:", event);
             setSession(newSession);
             
             if (event === 'SIGNED_IN' && newSession) {
-              // Usar setTimeout para evitar potenciais deadlocks
+              // Use setTimeout to avoid potential deadlocks
               setTimeout(() => {
                 console.log("Buscando perfil do usuário após SIGNED_IN");
                 fetchUserProfile(newSession.user.id).then(profile => {
@@ -58,12 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         );
         
-        // DEPOIS verifica se já existe uma sessão
+        // AFTER that check if there is an existing session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         console.log("Sessão atual:", currentSession ? "existe" : "não existe");
         setSession(currentSession);
         
-        // Se sessão existe, busca o perfil do usuário
+        // If session exists, fetch user profile
         if (currentSession?.user) {
           try {
             console.log("Buscando perfil do usuário na inicialização");
