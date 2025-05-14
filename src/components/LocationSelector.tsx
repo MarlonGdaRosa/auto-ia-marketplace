@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { getStates, getCities } from "@/services/vehicle";
 import { Label } from "@/components/ui/label";
@@ -34,47 +35,35 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
-  // Load states and cities on component mount
+  // Load states on component mount
   useEffect(() => {
-    const loadStatesAndCities = async () => {
+    const loadStates = async () => {
       setLoadingStates(true);
       try {
         const statesData = await getStates();
         setStates(statesData);
-
+        
+        // If initial state is provided, find its ID
         if (initialState) {
+          console.log("Initial state provided:", initialState);
           const stateObj = statesData.find(s => s.sigla === initialState);
           if (stateObj) {
+            console.log("Found state:", stateObj.nome, stateObj.id);
             setSelectedStateId(stateObj.id.toString());
-            setLoadingCities(true);
-            try {
-              const citiesData = await getCities(stateObj.id);
-              setCities(citiesData);
-
-              if (initialCity) {
-                const cityObj = citiesData.find(c => c.nome === initialCity);
-                if (cityObj) {
-                  setSelectedCity(cityObj.nome);
-                  onCityChange(cityObj.nome); // Chama o callback ao selecionar a cidade inicial
-                }
-              }
-            } catch (error) {
-              toast.error("Erro ao carregar cidades");
-            } finally {
-              setLoadingCities(false);
-            }
+            // Load cities for this state
+            loadCitiesForState(stateObj.id);
           }
         }
       } catch (error) {
+        console.error("Error loading states:", error);
         toast.error("Erro ao carregar estados");
       } finally {
         setLoadingStates(false);
       }
     };
 
-    loadStatesAndCities();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialState, initialCity]);
+    loadStates();
+  }, [initialState]);
 
   // Helper function to load cities for a state
   const loadCitiesForState = async (stateId: number) => {
@@ -82,6 +71,16 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     try {
       const citiesData = await getCities(stateId);
       setCities(citiesData);
+      
+      // If initial city is provided, select it
+      if (initialCity) {
+        console.log("Initial city provided:", initialCity);
+        const cityObj = citiesData.find(c => c.nome === initialCity);
+        if (cityObj) {
+          console.log("Found city:", cityObj.nome);
+          setSelectedCity(cityObj.nome);
+        }
+      }
     } catch (error) {
       console.error("Error loading cities:", error);
       toast.error("Erro ao carregar cidades");
