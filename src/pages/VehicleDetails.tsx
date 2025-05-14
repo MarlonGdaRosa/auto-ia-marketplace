@@ -206,10 +206,10 @@ const VehicleDetails: React.FC = () => {
               </h2>
               <div className="flex items-center text-gray-600 mb-4">
                 <MapPin className="h-4 w-4 mr-1" />
-                <span>
-                  {vehicle.location.city}, {vehicle.location.state}
-                  {vehicle.location.region && ` - ${vehicle.location.region}`}
-                </span>
+              <span>
+                {vehicle.location?.city}, {vehicle.location?.state}
+                {vehicle.location?.region && ` - ${vehicle.location.region}`}
+              </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
