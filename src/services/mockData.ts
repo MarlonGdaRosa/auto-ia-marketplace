@@ -1,3 +1,4 @@
+
 import { Vehicle, Seller } from "@/types";
 
 export const mockVehicles: Vehicle[] = [
@@ -8,8 +9,11 @@ export const mockVehicles: Vehicle[] = [
     year: 2020,
     mileage: 50000,
     price: 85000,
-    city: "São Paulo",
-    state: "SP",
+    location: {
+      city: "São Paulo",
+      state: "SP",
+      region: ""
+    },
     transmission: "automatic",
     fuel: "flex",
     description: "Sedan em ótimo estado, ideal para a família.",
@@ -18,7 +22,7 @@ export const mockVehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
     features: ["Ar condicionado", "Direção hidráulica", "Vidros elétricos"],
-    is_new: false,
+    status: "available",
     created_at: "2023-08-01T10:00:00.000Z",
     seller_id: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
   },
@@ -29,8 +33,11 @@ export const mockVehicles: Vehicle[] = [
     year: 2022,
     mileage: 30000,
     price: 95000,
-    city: "Rio de Janeiro",
-    state: "RJ",
+    location: {
+      city: "Rio de Janeiro",
+      state: "RJ",
+      region: ""
+    },
     transmission: "automatic",
     fuel: "flex",
     description: "Carro completo, com baixa quilometragem.",
@@ -39,7 +46,7 @@ export const mockVehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
     features: ["Ar condicionado", "Direção elétrica", "Câmera de ré"],
-    is_new: false,
+    status: "available",
     created_at: "2023-08-05T14:30:00.000Z",
     seller_id: "3f0d0edf-b96c-4c7a-b297-85da5726dc5a",
   },
@@ -50,8 +57,11 @@ export const mockVehicles: Vehicle[] = [
     year: 2021,
     mileage: 40000,
     price: 65000,
-    city: "Belo Horizonte",
-    state: "MG",
+    location: {
+      city: "Belo Horizonte",
+      state: "MG",
+      region: ""
+    },
     transmission: "manual",
     fuel: "flex",
     description: "Hatchback compacto, ideal para o dia a dia.",
@@ -60,7 +70,7 @@ export const mockVehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
     features: ["Ar condicionado", "Direção hidráulica", "Travas elétricas"],
-    is_new: false,
+    status: "available",
     created_at: "2023-08-10T09:00:00.000Z",
     seller_id: "2bf4d8e1-5a15-4cb4-9cc9-5f7c494da8a9",
   },
@@ -71,8 +81,11 @@ export const mockVehicles: Vehicle[] = [
     year: 2019,
     mileage: 60000,
     price: 55000,
-    city: "Curitiba",
-    state: "PR",
+    location: {
+      city: "Curitiba",
+      state: "PR",
+      region: ""
+    },
     transmission: "manual",
     fuel: "flex",
     description: "Carro popular, econômico e confiável.",
@@ -81,7 +94,7 @@ export const mockVehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1605559424843-9e4c228d88c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
     features: ["Ar condicionado", "Direção hidráulica", "Alarme"],
-    is_new: false,
+    status: "available",
     created_at: "2023-08-15T16:15:00.000Z",
     seller_id: "8d3e9f2a-6c5b-4a7d-8e9f-0a1b2c3d4e5f",
   },
@@ -92,8 +105,11 @@ export const mockVehicles: Vehicle[] = [
     year: 2023,
     mileage: 10000,
     price: 75000,
-    city: "Porto Alegre",
-    state: "RS",
+    location: {
+      city: "Porto Alegre",
+      state: "RS",
+      region: ""
+    },
     transmission: "automatic",
     fuel: "flex",
     description: "Hatchback moderno, com design atraente.",
@@ -102,7 +118,7 @@ export const mockVehicles: Vehicle[] = [
       "https://images.unsplash.com/photo-1549399543-9c089e328fa8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNhcnN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
     ],
     features: ["Ar condicionado", "Direção elétrica", "Central multimídia"],
-    is_new: true,
+    status: "available",
     created_at: "2023-08-20T11:45:00.000Z",
     seller_id: "6d7ebcac-845a-49f2-a13c-72c8119230b9",
   },
@@ -157,4 +173,20 @@ export const mockFilterOptions = {
   transmissions: ["manual", "automatic"],
   fuels: ["flex"],
   states: ["SP", "RJ", "MG", "PR", "RS"],
+};
+
+// Add the missing dashboardStats mock data
+export const dashboardStats = {
+  totalVehicles: 25,
+  soldVehicles: 8,
+  reservedVehicles: 3,
+  totalProposals: 42,
+  pendingProposals: 12,
+  contactedProposals: 20,
+  closedProposals: 10,
+  topBrand: {
+    name: "Toyota",
+    count: 7
+  },
+  newProposals: 5
 };

@@ -1,5 +1,5 @@
 
-import { useVehicleFormImplementation } from "./vehicle-form";
+import { useVehicleFormImplementation } from "./vehicle-form/useVehicleFormImplementation";
 import { Vehicle } from "@/types";
 import { getVehicleById } from "@/services/supabaseService";
 import { useQuery } from "@tanstack/react-query";

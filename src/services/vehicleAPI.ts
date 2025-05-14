@@ -1,4 +1,13 @@
 
-// This file now re-exports all vehicle API functions from the refactored modules
-export * from './vehicle';
-export { getStates, getCities } from './vehicle/locationAPI';
+import { getStates, getCities } from './vehicle/locationAPI';
+import { getFipeBrands, getFipeModels, getFipeYears, getFipeInfo } from './vehicle/fipeAPI';
+
+// Re-export everything for easier imports
+export {
+  getStates,
+  getCities,
+  getFipeBrands,
+  getFipeModels,
+  getFipeYears,
+  getFipeInfo
+};
