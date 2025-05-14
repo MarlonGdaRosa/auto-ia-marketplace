@@ -35,6 +35,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   const [selectedStateId, setSelectedStateId] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
+  // Load states on component mount
   useEffect(() => {
     const loadStates = async () => {
       setLoadingStates(true);
@@ -44,10 +45,13 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         
         // If initial state is provided, find its ID
         if (initialState) {
+          console.log("Initial state provided:", initialState);
           const stateObj = statesData.find(s => s.sigla === initialState);
           if (stateObj) {
+            console.log("Found state:", stateObj.nome, stateObj.id);
             setSelectedStateId(stateObj.id.toString());
-            handleStateChange(stateObj.id.toString());
+            // Load cities for this state
+            loadCitiesForState(stateObj.id);
           }
         }
       } catch (error) {
@@ -61,6 +65,30 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     loadStates();
   }, [initialState]);
 
+  // Helper function to load cities for a state
+  const loadCitiesForState = async (stateId: number) => {
+    setLoadingCities(true);
+    try {
+      const citiesData = await getCities(stateId);
+      setCities(citiesData);
+      
+      // If initial city is provided, select it
+      if (initialCity) {
+        console.log("Initial city provided:", initialCity);
+        const cityObj = citiesData.find(c => c.nome === initialCity);
+        if (cityObj) {
+          console.log("Found city:", cityObj.nome);
+          setSelectedCity(cityObj.nome);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading cities:", error);
+      toast.error("Erro ao carregar cidades");
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
   const handleStateChange = async (stateId: string) => {
     setSelectedStateId(stateId);
     setSelectedCity("");
@@ -71,25 +99,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       onStateChange(selectedState.sigla);
     }
     
-    setLoadingCities(true);
-    try {
-      const citiesData = await getCities(parseInt(stateId));
-      setCities(citiesData);
-      
-      // If initial city is provided, find it
-      if (initialCity && citiesData.length > 0) {
-        const cityObj = citiesData.find(c => c.nome === initialCity);
-        if (cityObj) {
-          setSelectedCity(cityObj.nome);
-          onCityChange(cityObj.nome);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading cities:", error);
-      toast.error("Erro ao carregar cidades");
-    } finally {
-      setLoadingCities(false);
-    }
+    // Load cities for the selected state
+    await loadCitiesForState(parseInt(stateId));
   };
 
   const handleCityChange = (city: string) => {

@@ -104,6 +104,7 @@ export const useVehicleFormHandlers = (
   };
 
   const handleStateChange = (state: string) => {
+    console.log("Updating state to:", state);
     setFormData({
       ...formData,
       location: {
@@ -114,6 +115,7 @@ export const useVehicleFormHandlers = (
   };
 
   const handleCityChange = (city: string) => {
+    console.log("Updating city to:", city);
     setFormData({
       ...formData,
       location: {
