@@ -20,7 +20,7 @@ import AdminSellers from "./pages/admin/Sellers";
 import AdminProposals from "./pages/admin/Proposals";
 
 // Auth provider
-import { AuthProvider } from "./contexts/auth";
+import { AuthProvider } from "./contexts/AuthContext";
 import RouteGuard from "./components/RouteGuard";
 
 const queryClient = new QueryClient({
