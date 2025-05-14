@@ -243,12 +243,12 @@ const VehicleDetails: React.FC = () => {
 
               <h3 className="text-xl font-semibold mb-3">Características</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
-                {vehicle.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-center">
-                    <Check className="h-4 w-4 text-brand-blue mr-2" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
+              {vehicle.features?.map((feature, idx) => (
+                <div key={idx} className="flex items-center">
+                  <Check className="h-4 w-4 text-brand-blue mr-2" />
+                  <span>{feature}</span>
+                </div>
+              ))}
               </div>
 
               <Separator className="my-6" />
