@@ -23,6 +23,7 @@ import {
   Fuel,
   Filter,
   X,
+  Loader,
 } from "lucide-react";
 
 interface VehicleFilterProps {
@@ -257,7 +258,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
                 <SelectValue placeholder={isLoadingModels ? "Carregando modelos..." : "Todos os modelos"} />
                 {isLoadingModels && (
                   <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
               </SelectTrigger>
