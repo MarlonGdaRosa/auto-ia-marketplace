@@ -170,7 +170,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
         <form onSubmit={handleSearchSubmit} className="relative">
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           <Input
-            placeholder="Buscar por marca ou modelo..."
+            placeholder="Pesquisar aqui..."
             className="pl-10 pr-16"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
