@@ -15,6 +15,7 @@ import { Seller } from "@/types";
 import TextVehicleInfo from "@/components/TextVehicleInfo";
 import FipeVehicleSelector from "@/components/FipeVehicleSelector";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import LocationSelector from "@/components/LocationSelector";
 
 interface VehicleBasicInfoFormProps {
   formData: Partial<Vehicle>;
@@ -96,6 +97,7 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
         value={vehicleInputMode}
         onValueChange={(value) => setVehicleInputMode(value as "manual" | "fipe")}
         className="mb-6"
+        defaultValue="manual"
       >
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="manual">Preenchimento Manual</TabsTrigger>

@@ -100,7 +100,7 @@ export const useVehicleFormHandlers = (
     setFormData({
       ...formData,
       location: {
-        ...formData.location!,
+        ...(formData.location || { city: "", region: "" }),
         state
       }
     });
@@ -110,7 +110,7 @@ export const useVehicleFormHandlers = (
     setFormData({
       ...formData,
       location: {
-        ...formData.location!,
+        ...(formData.location || { state: "", region: "" }),
         city
       }
     });
