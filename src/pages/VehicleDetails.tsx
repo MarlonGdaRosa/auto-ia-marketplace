@@ -158,22 +158,22 @@ const VehicleDetails: React.FC = () => {
                     </div>
                   </>
                 )}
-
-                {vehicle.status !== "available" && (
-                  <div className="absolute top-2 right-2">
-                    <Badge
-                      variant={vehicle.status === "sold" ? "destructive" : "secondary"}
-                      className={cn(
-                        "text-white py-1 px-3 text-sm",
-                        vehicle.status === "sold" 
-                          ? "bg-red-500" 
-                          : "bg-amber-500"
-                      )}
-                    >
-                      {vehicle.status === "sold" ? "Vendido" : "Reservado"}
-                    </Badge>
-                  </div>
-                )}
+                
+              {vehicle.status && vehicle.status !== "available" && (
+                <div className="absolute top-2 right-2">
+                  <Badge
+                    variant={vehicle.status === "sold" ? "destructive" : "secondary"}
+                    className={cn(
+                      "text-white py-1 px-3 text-sm",
+                      vehicle.status === "sold" 
+                        ? "bg-red-500" 
+                        : "bg-amber-500"
+                    )}
+                  >
+                    {vehicle.status === "sold" ? "Vendido" : "Reservado"}
+                  </Badge>
+                </div>
+              )}
               </div>
 
               {vehicle.images.length > 1 && (
@@ -321,13 +321,15 @@ const VehicleDetails: React.FC = () => {
                   </div>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <Phone className="h-4 w-4" />
-                  {formatPhone(seller.phone)}
-                </Button>
+                {seller?.phone && (
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    <Phone className="h-4 w-4" />
+                    {formatPhone(seller.phone)}
+                  </Button>
+                )}
               </div>
             ) : null}
           </div>
