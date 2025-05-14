@@ -35,7 +35,7 @@ const VehicleDetails: React.FC = () => {
   
   const { data: seller, isLoading: isLoadingSeller } = useQuery({
     queryKey: ['seller', vehicle?.seller_id],
-    queryFn: () => getSellerById(vehicle?.seller_id || ""),
+    queryFn: () => vehicle?.seller_id ? getSellerById(vehicle.seller_id) : Promise.resolve(null),
     enabled: !!vehicle?.seller_id
   });
   
