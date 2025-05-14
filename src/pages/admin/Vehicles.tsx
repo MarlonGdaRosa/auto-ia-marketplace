@@ -319,7 +319,7 @@ const Vehicles: React.FC = () => {
             ) : (
               filteredVehicles.map((vehicle) => (
                 <TableRow key={vehicle.id}>
-                  {/*<TableCell>
+                  {/*<TableCell> // imagens comentada
                     <div className="h-12 w-16 overflow-hidden rounded-md">
                       <img
                         src={vehicle.images[0] || "/placeholder.svg"}
