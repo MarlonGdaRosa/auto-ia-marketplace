@@ -121,7 +121,7 @@ const VehicleDetails: React.FC = () => {
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="relative aspect-video">
                 <img
-                  src={vehicle.images[currentImageIndex] || "/placeholder.svg"}
+                  src={vehicle.images?.[currentImageIndex] || "/placeholder.svg"}
                   alt={`${vehicle.brand} ${vehicle.model} - Imagem ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
