@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Vehicle } from "@/types";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,6 +12,9 @@ import {
 import { formatCurrency } from "@/lib/format";
 import CurrencyInput from "react-currency-input-field";
 import { Seller } from "@/types";
+import TextVehicleInfo from "@/components/TextVehicleInfo";
+import FipeVehicleSelector from "@/components/FipeVehicleSelector";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface VehicleBasicInfoFormProps {
   formData: Partial<Vehicle>;
@@ -28,61 +31,124 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
   handleSelectChange,
   sellers,
 }) => {
+  const [vehicleInputMode, setVehicleInputMode] = useState<"manual" | "fipe">("fipe");
+  
+  const handleBrandChange = (brand: string) => {
+    handleSelectChange("brand", brand);
+  };
+  
+  const handleModelChange = (model: string) => {
+    handleSelectChange("model", model);
+  };
+  
+  const handleYearChange = (year: number) => {
+    handleSelectChange("year", year.toString());
+  };
+  
+  const handleFuelChange = (fuel: string) => {
+    handleSelectChange("fuel", fuel);
+  };
+  
+  const handleFipePriceChange = (fipeData: any) => {
+    if (fipeData && fipeData.preco) {
+      // Convert price string like "R$ 50.000,00" to number
+      const priceStr = fipeData.preco.replace('R$ ', '').replace('.', '').replace(',', '.');
+      const priceNum = parseFloat(priceStr);
+      if (!isNaN(priceNum)) {
+        handlePriceChange(priceNum.toString());
+      }
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div className="space-y-2">
-        <Label htmlFor="price">
-          Preço (R$) <span className="text-red-500">*</span>
-        </Label>
-        <div className="relative">
-          <CurrencyInput
-            id="price"
-            name="price"
-            placeholder="R$ 0,00"
-            defaultValue={formData.price}
-            decimalsLimit={2}
-            decimalSeparator=","
-            groupSeparator="."
-            prefix="R$ "
-            onValueChange={handlePriceChange}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            required
+    <div className="space-y-6">
+      <Tabs
+        value={vehicleInputMode}
+        onValueChange={(value) => setVehicleInputMode(value as "manual" | "fipe")}
+        className="mb-6"
+      >
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="fipe">Usar Tabela FIPE</TabsTrigger>
+          <TabsTrigger value="manual">Preenchimento Manual</TabsTrigger>
+        </TabsList>
+        <TabsContent value="fipe" className="pt-4">
+          <FipeVehicleSelector
+            onBrandChange={handleBrandChange}
+            onModelChange={handleModelChange}
+            onYearChange={handleYearChange}
+            onFuelChange={handleFuelChange}
+            onFipePriceChange={handleFipePriceChange}
+            initialBrand={formData.brand}
+            initialModel={formData.model}
+            initialYear={formData.year}
           />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="mileage">Quilometragem</Label>
-        <div className="relative">
-          <CurrencyInput
-            id="mileage"
-            name="mileage"
-            placeholder="0 km"
-            defaultValue={formData.mileage}
-            decimalsLimit={0}
-            decimalSeparator=""
-            groupSeparator="."
-            suffix=" km"
-            onValueChange={handleMileageChange}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            // Important: Don't set type="number" with CurrencyInput
+        </TabsContent>
+        <TabsContent value="manual" className="pt-4">
+          <TextVehicleInfo
+            initialBrand={formData.brand}
+            initialModel={formData.model}
+            initialYear={formData.year}
+            onBrandChange={handleBrandChange}
+            onModelChange={handleModelChange}
+            onYearChange={handleYearChange}
           />
+        </TabsContent>
+      </Tabs>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="price">
+            Preço (R$) <span className="text-red-500">*</span>
+          </Label>
+          <div className="relative">
+            <CurrencyInput
+              id="price"
+              name="price"
+              placeholder="R$ 0,00"
+              defaultValue={formData.price}
+              decimalsLimit={2}
+              decimalSeparator=","
+              groupSeparator="."
+              prefix="R$ "
+              onValueChange={handlePriceChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              required
+            />
+          </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={formData.status || "available"}
-          onValueChange={(value) => handleSelectChange("status", value)}
-        >
-          <SelectTrigger id="status">
-            <SelectValue placeholder="Selecione o status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Disponível</SelectItem>
-            <SelectItem value="sold">Vendido</SelectItem>
-            <SelectItem value="reserved">Reservado</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="space-y-2">
+          <Label htmlFor="mileage">Quilometragem</Label>
+          <div className="relative">
+            <CurrencyInput
+              id="mileage"
+              name="mileage"
+              placeholder="0 km"
+              defaultValue={formData.mileage}
+              decimalsLimit={0}
+              decimalSeparator=""
+              groupSeparator="."
+              suffix=" km"
+              onValueChange={handleMileageChange}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            value={formData.status || "available"}
+            onValueChange={(value) => handleSelectChange("status", value)}
+          >
+            <SelectTrigger id="status">
+              <SelectValue placeholder="Selecione o status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="available">Disponível</SelectItem>
+              <SelectItem value="sold">Vendido</SelectItem>
+              <SelectItem value="reserved">Reservado</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

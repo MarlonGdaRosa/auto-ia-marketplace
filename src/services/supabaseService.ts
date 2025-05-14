@@ -163,6 +163,24 @@ export const updateVehicle = async (id: string, vehicleData: Partial<Vehicle>) =
 export const deleteVehicle = async (id: string) => {
   try {
     console.log('Deleting vehicle with ID:', id);
+    
+    // Verifique primeiro se o veículo existe
+    const { data: existingVehicle, error: checkError } = await supabase
+      .from('vehicles')
+      .select('id')
+      .eq('id', id)
+      .single();
+      
+    if (checkError) {
+      console.error('Error checking if vehicle exists:', checkError);
+      throw new Error(`Veículo não encontrado: ${checkError.message}`);
+    }
+    
+    if (!existingVehicle) {
+      throw new Error('Veículo não encontrado');
+    }
+    
+    // Agora exclua o veículo
     const { error } = await supabase
       .from('vehicles')
       .delete()
@@ -173,7 +191,7 @@ export const deleteVehicle = async (id: string) => {
       throw error;
     }
     
-    toast.success("Veículo excluído com sucesso!");
+    console.log('Vehicle successfully deleted');
     return true;
   } catch (error: any) {
     console.error('Error deleting vehicle:', error);

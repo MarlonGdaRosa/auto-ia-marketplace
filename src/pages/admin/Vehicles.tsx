@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { getVehicles } from "@/services/supabaseService";
+import { getVehicles, deleteVehicle } from "@/services/supabaseService";
 import { Vehicle } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { Plus, Edit, Trash2, Search, ArrowUpDown } from "lucide-react";
@@ -138,10 +137,13 @@ const Vehicles: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      // In a real app, this would make an API call
-      toast.success(`Veículo #${id} excluído com sucesso`);
-      // After successful delete, reload the vehicles
+      // Chamada real para excluir o veículo
+      await deleteVehicle(id);
+      
+      // Após exclusão bem-sucedida, recarregar veículos
       await loadVehicles();
+      
+      toast.success(`Veículo excluído com sucesso`);
     } catch (error) {
       console.error("Error deleting vehicle:", error);
       toast.error("Erro ao excluir veículo");
