@@ -17,7 +17,7 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,21 +26,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Initialize auth state and listen for changes
   useEffect(() => {
-    // Avoid double initialization
+    // Evitar inicialização dupla
     if (authInitialized) return;
     
     const initializeAuth = async () => {
       try {
         console.log("Inicializando autenticação...");
         
-        // Set up auth state listener first to avoid missing events
+        // Set up auth state listener primeiro para evitar perder eventos
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
           async (event, newSession) => {
             console.log("Auth state change:", event);
             setSession(newSession);
             
             if (event === 'SIGNED_IN' && newSession) {
-              // Use setTimeout to avoid potential deadlocks
+              // Usar setTimeout para evitar potenciais deadlocks
               setTimeout(() => {
                 console.log("Buscando perfil do usuário após SIGNED_IN");
                 fetchUserProfile(newSession.user.id).then(profile => {
@@ -58,12 +58,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         );
         
-        // THEN check for existing session
+        // DEPOIS verifica se já existe uma sessão
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         console.log("Sessão atual:", currentSession ? "existe" : "não existe");
         setSession(currentSession);
         
-        // If session exists, fetch the user profile
+        // Se sessão existe, busca o perfil do usuário
         if (currentSession?.user) {
           try {
             console.log("Buscando perfil do usuário na inicialização");
