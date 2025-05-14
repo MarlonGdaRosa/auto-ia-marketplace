@@ -121,10 +121,18 @@ const VehicleDetails: React.FC = () => {
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="relative aspect-video">
                 <img
-                  src={vehicle.images?.[currentImageIndex] || "/placeholder.svg"}
+                  src={vehicle.images?.[currentImageIndex] || ""}
                   alt={`${vehicle.brand} ${vehicle.model} - Imagem ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none"; // Esconde a imagem quebrada
+                    const parent = (e.target as HTMLImageElement).parentElement;
+                    if (parent) {
+                      parent.innerHTML = '<div class="flex items-center justify-center w-full h-full bg-gray-100 text-gray-500">Sem imagem disponível</div>';
+                    }
+                  }}
                 />
+              </div>
                 {vehicle.images.length > 1 && (
                   <>
                     <Button
