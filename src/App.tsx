@@ -36,49 +36,39 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <TooltipProvider>
-        <Toaster />
-        <Sonner closeButton position="top-right" />
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/vehicle/:id" element={<VehicleDetails />} />
-          
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={
-            <AuthProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner closeButton position="top-right" />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/vehicle/:id" element={<VehicleDetails />} />
+            
+            {/* Admin routes */}
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={
               <RouteGuard requireAdmin={false}><AdminDashboard /></RouteGuard>
-            </AuthProvider>
-          } />
-          <Route path="/admin/vehicles" element={
-            <AuthProvider>
+            } />
+            <Route path="/admin/vehicles" element={
               <RouteGuard requireAdmin={false}><AdminVehicles /></RouteGuard>
-            </AuthProvider>
-          } />
-          <Route path="/admin/vehicles/new" element={
-            <AuthProvider>
+            } />
+            <Route path="/admin/vehicles/new" element={
               <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
-            </AuthProvider>
-          } />
-          <Route path="/admin/vehicles/edit/:id" element={
-            <AuthProvider>
+            } />
+            <Route path="/admin/vehicles/edit/:id" element={
               <RouteGuard requireAdmin={false}><AdminVehicleForm /></RouteGuard>
-            </AuthProvider>
-          } />
-          <Route path="/admin/sellers" element={
-            <AuthProvider>
+            } />
+            <Route path="/admin/sellers" element={
               <RouteGuard requireAdmin={false}><AdminSellers /></RouteGuard>
-            </AuthProvider>
-          } />
-          <Route path="/admin/proposals" element={
-            <AuthProvider>
+            } />
+            <Route path="/admin/proposals" element={
               <RouteGuard requireAdmin={false}><AdminProposals /></RouteGuard>
-            </AuthProvider>
-          } />
-          
-          {/* Not found */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            } />
+            
+            {/* Not found */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </TooltipProvider>
     </BrowserRouter>
   </QueryClientProvider>
