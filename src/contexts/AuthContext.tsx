@@ -1,5 +1,6 @@
 
-// This file is now just a re-export from the auth directory
-import { useAuth, AuthProvider } from './auth/index';
+// This file directly exports the useAuth hook to avoid circular dependencies
+import { useAuth, AuthProvider } from './auth/AuthProvider';
 export { useAuth, AuthProvider };
 export type { User, AuthContextType } from './auth/types';
+
