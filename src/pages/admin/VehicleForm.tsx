@@ -51,7 +51,7 @@ const VehicleForm: React.FC = () => {
       !formData ||
       Object.keys(formData).length === 0)
   ) {
-    return <VehicleFormLoading />;
+    return <VehicleFormLoading isEditMode={true} />;
   }
 
   return (
