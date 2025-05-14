@@ -254,7 +254,9 @@ const VehicleDetails: React.FC = () => {
               <Separator className="my-6" />
 
               <h3 className="text-xl font-semibold mb-3">Descrição</h3>
-              <p className="text-gray-700 whitespace-pre-line">{vehicle.description}</p>
+              <p className="text-gray-700 whitespace-pre-line">
+                {vehicle.description || "Descrição não disponível."}
+              </p>
             </div>
           </div>
 
