@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -132,7 +133,6 @@ const VehicleDetails: React.FC = () => {
                     }
                   }}
                 />
-              </div>
                 {vehicle.images.length > 1 && (
                   <>
                     <Button
@@ -167,21 +167,21 @@ const VehicleDetails: React.FC = () => {
                   </>
                 )}
 
-              {vehicle.status && vehicle.status !== "available" && (
-                <div className="absolute top-2 right-2">
-                  <Badge
-                    variant={vehicle.status === "sold" ? "destructive" : "secondary"}
-                    className={cn(
-                      "text-white py-1 px-3 text-sm",
-                      vehicle.status === "sold" 
-                        ? "bg-red-500" 
-                        : "bg-amber-500"
-                    )}
-                  >
-                    {vehicle.status === "sold" ? "Vendido" : "Reservado"}
-                  </Badge>
-                </div>
-              )}
+                {vehicle.status && vehicle.status !== "available" && (
+                  <div className="absolute top-2 right-2">
+                    <Badge
+                      variant={vehicle.status === "sold" ? "destructive" : "secondary"}
+                      className={cn(
+                        "text-white py-1 px-3 text-sm",
+                        vehicle.status === "sold" 
+                          ? "bg-red-500" 
+                          : "bg-amber-500"
+                      )}
+                    >
+                      {vehicle.status === "sold" ? "Vendido" : "Reservado"}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               {vehicle.images.length > 1 && (
@@ -214,10 +214,10 @@ const VehicleDetails: React.FC = () => {
               </h2>
               <div className="flex items-center text-gray-600 mb-4">
                 <MapPin className="h-4 w-4 mr-1" />
-              <span>
-                {vehicle.location?.city}, {vehicle.location?.state}
-                {vehicle.location?.region && ` - ${vehicle.location.region}`}
-              </span>
+                <span>
+                  {vehicle.location?.city}, {vehicle.location?.state}
+                  {vehicle.location?.region && ` - ${vehicle.location.region}`}
+                </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -251,12 +251,12 @@ const VehicleDetails: React.FC = () => {
 
               <h3 className="text-xl font-semibold mb-3">Características</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
-              {vehicle.features?.map((feature, idx) => (
-                <div key={idx} className="flex items-center">
-                  <Check className="h-4 w-4 text-brand-blue mr-2" />
-                  <span>{feature}</span>
-                </div>
-              ))}
+                {vehicle.features?.map((feature, idx) => (
+                  <div key={idx} className="flex items-center">
+                    <Check className="h-4 w-4 text-brand-blue mr-2" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
 
               <Separator className="my-6" />
