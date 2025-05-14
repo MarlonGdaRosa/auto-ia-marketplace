@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FilterOptions } from "@/types";
-import { fetchStates, fetchCitiesByState, fetchBrands, fetchModelsByBrand } from "@/services/vehicle";
+import { getStates, getCities, getBrands, getModels } from "@/services/vehicle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,23 +45,23 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
   // Queries for external data
   const { data: states = [] } = useQuery({
     queryKey: ['states'],
-    queryFn: fetchStates
+    queryFn: getStates
   });
 
   const { data: cities = [] } = useQuery({
     queryKey: ['cities', selectedState],
-    queryFn: () => fetchCitiesByState(selectedState ? parseInt(selectedState, 10) : 0),
+    queryFn: () => selectedState ? getCities(selectedState) : Promise.resolve([]),
     enabled: !!selectedState
   });
 
   const { data: brands = [], isLoading: isLoadingBrands } = useQuery({
     queryKey: ['brands'],
-    queryFn: fetchBrands
+    queryFn: () => getBrands()
   });
 
   const { data: models = [], isLoading: isLoadingModels } = useQuery({
     queryKey: ['models', selectedBrand],
-    queryFn: () => fetchModelsByBrand(selectedBrand),
+    queryFn: () => selectedBrand && selectedBrand !== "all" ? getModels(selectedBrand) : Promise.resolve([]),
     enabled: !!selectedBrand && selectedBrand !== "all"
   });
 
@@ -87,8 +87,8 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     }
 
     // Set selected brand if it exists in filters
-    if (initialFilters.brand) {
-      const brandItem = brands.find(b => b.nome === initialFilters.brand);
+    if (initialFilters.brand && brands && brands.length > 0) {
+      const brandItem = brands.find((b: any) => b.nome === initialFilters.brand);
       if (brandItem) {
         setSelectedBrand(brandItem.id);
       }
@@ -107,8 +107,8 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
       
       // Fix the type issue by ensuring we're setting a string
       if (value && value !== "all") {
-        const stateId = states.find((s: any) => s.sigla === value)?.id;
-        setSelectedState(stateId ? stateId.toString() : "");
+        const stateObj = states.find((s: any) => s.sigla === value);
+        setSelectedState(stateObj ? stateObj.id.toString() : "");
       } else {
         setSelectedState("");
       }
@@ -117,8 +117,10 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
     // Handle special case for brand selection
     if (key === "brand" && value !== filters.brand) {
       newFilters.model = undefined; // Reset model when brand changes
-      const brandItem = brands.find(b => b.nome === value);
-      setSelectedBrand(brandItem?.id || "");
+      if (brands && brands.length > 0) {
+        const brandItem = brands.find((b: any) => b.nome === value);
+        setSelectedBrand(brandItem?.id || "");
+      }
     }
 
     setFilters(newFilters);
@@ -217,7 +219,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">Todas as marcas</SelectItem>
-                {brands.map((brand: any) => (
+                {Array.isArray(brands) && brands.map((brand: any) => (
                   <SelectItem key={brand.id} value={brand.nome}>
                     {brand.nome}
                   </SelectItem>
@@ -240,7 +242,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todos os modelos</SelectItem>
-                  {models.map((model: any) => (
+                  {Array.isArray(models) && models.map((model: any) => (
                     <SelectItem key={model.id} value={model.nome}>
                       {model.nome}
                     </SelectItem>
@@ -266,7 +268,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
             <SelectContent>
               <SelectGroup>
                 <SelectItem value="all">Todos os estados</SelectItem>
-                {states.map((state: any) => (
+                {Array.isArray(states) && states.map((state: any) => (
                   <SelectItem key={state.id} value={state.sigla}>
                     {state.nome}
                   </SelectItem>
@@ -289,7 +291,7 @@ const VehicleFilter: React.FC<VehicleFilterProps> = ({
               <SelectContent>
                 <SelectGroup>
                   <SelectItem value="all">Todas as cidades</SelectItem>
-                  {cities.map((city: any) => (
+                  {Array.isArray(cities) && cities.map((city: any) => (
                     <SelectItem key={city.id} value={city.nome}>
                       {city.nome}
                     </SelectItem>

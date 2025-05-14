@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { fetchStates, fetchCitiesByState } from "@/services/vehicle";
+import { getStates, getCities } from "@/services/vehicle";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { IBGEState, IBGECity } from "@/services/vehicle/types";
 
 interface LocationSelectorProps {
   onStateChange: (state: string) => void;
@@ -24,8 +26,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
   initialState,
   initialCity,
 }) => {
-  const [states, setStates] = useState<{ id: number; sigla: string; nome: string }[]>([]);
-  const [cities, setCities] = useState<{ id: number; nome: string }[]>([]);
+  const [states, setStates] = useState<IBGEState[]>([]);
+  const [cities, setCities] = useState<IBGECity[]>([]);
   
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
@@ -37,7 +39,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     const loadStates = async () => {
       setLoadingStates(true);
       try {
-        const statesData = await fetchStates();
+        const statesData = await getStates();
         setStates(statesData);
         
         // If initial state is provided, find its ID
@@ -71,7 +73,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     
     setLoadingCities(true);
     try {
-      const citiesData = await fetchCitiesByState(parseInt(stateId));
+      const citiesData = await getCities(parseInt(stateId));
       setCities(citiesData);
       
       // If initial city is provided, find it

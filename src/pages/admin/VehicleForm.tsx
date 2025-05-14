@@ -46,7 +46,7 @@ const VehicleForm: React.FC = () => {
 
   // Show loading state while fetching vehicle data
   if (isEditing && isLoadingVehicle) {
-    return <VehicleFormLoading />;
+    return <VehicleFormLoading isEditMode={isEditing} />;
   }
 
   // Handle fetch error
@@ -60,7 +60,7 @@ const VehicleForm: React.FC = () => {
 
   return (
     <AdminLayout title={isEditing ? "Editar Veículo" : "Novo Veículo"}>
-      <form onSubmit={(e) => handleSubmit(e, navigate, toast)}>
+      <form onSubmit={(e) => handleSubmit(e)}>
         <Tabs defaultValue="basic" className="mb-8">
           <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="basic">Informações Básicas</TabsTrigger>
@@ -73,9 +73,9 @@ const VehicleForm: React.FC = () => {
           <TabsContent value="basic" className="space-y-6">
             <VehicleBasicInfoForm 
               formData={formData}
-              handleInputChange={handleInputChange}
-              handleSelectChange={handleSelectChange}
-              handleFipeData={handleFipeData}
+              onChange={handleInputChange}
+              onSelectChange={handleSelectChange}
+              onFipeData={handleFipeData}
             />
           </TabsContent>
           
@@ -90,31 +90,30 @@ const VehicleForm: React.FC = () => {
           <TabsContent value="features" className="space-y-6">
             <VehicleFeaturesForm
               formData={formData}
-              setFormData={setFormData}
+              onChange={setFormData}
             />
           </TabsContent>
           
           <TabsContent value="description" className="space-y-6">
             <VehicleDescriptionForm
               formData={formData}
-              handleInputChange={handleInputChange}
+              handleChange={handleInputChange}
             />
           </TabsContent>
           
           <TabsContent value="images" className="space-y-6">
             <VehicleImagesForm
               formData={formData}
-              handleFileChange={handleFileChange}
-              removeImage={removeImage}
-              reorderImages={reorderImages}
+              onFileChange={handleFileChange}
+              onRemoveImage={removeImage}
+              onReorderImages={reorderImages}
             />
           </TabsContent>
         </Tabs>
         
         <VehicleFormActions
-          isEditing={isEditing}
           isSubmitting={isSubmitting}
-          navigate={navigate}
+          onCancel={() => navigate('/admin/vehicles')}
         />
       </form>
     </AdminLayout>

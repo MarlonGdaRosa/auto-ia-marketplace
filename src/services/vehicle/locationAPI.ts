@@ -1,17 +1,10 @@
+
 import axios from 'axios';
+import { IBGEState, IBGECity } from './types';
 
-interface State {
-  sigla: string;
-  nome: string;
-}
-
-interface City {
-  nome: string;
-}
-
-export const getStates = async (): Promise<State[]> => {
+export const getStates = async (): Promise<IBGEState[]> => {
   try {
-    const response = await axios.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
+    const response = await axios.get<IBGEState[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
     return response.data;
   } catch (error) {
     console.error('Error fetching states:', error);
@@ -19,14 +12,16 @@ export const getStates = async (): Promise<State[]> => {
   }
 };
 
-export const getCities = async (stateCode: string): Promise<City[]> => {
+export const getCities = async (stateId: number | string): Promise<IBGECity[]> => {
   try {
-    const response = await axios.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateCode}/municipios?orderBy=nome`);
+    const response = await axios.get<IBGECity[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios?orderBy=nome`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching cities for state ${stateCode}:`, error);
+    console.error(`Error fetching cities for state ${stateId}:`, error);
     return [];
   }
 };
 
-// Export any other location-related functions or data here
+// We'll also provide alias functions for backward compatibility
+export const fetchStates = getStates;
+export const fetchCitiesByState = getCities;
