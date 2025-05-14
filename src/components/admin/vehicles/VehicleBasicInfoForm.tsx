@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Vehicle } from "@/types";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,8 +13,6 @@ import { formatCurrency } from "@/lib/format";
 import CurrencyInput from "react-currency-input-field";
 import { Seller } from "@/types";
 import TextVehicleInfo from "@/components/TextVehicleInfo";
-import FipeVehicleSelector from "@/components/FipeVehicleSelector";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LocationSelector from "@/components/LocationSelector";
 
 interface VehicleBasicInfoFormProps {
@@ -36,8 +34,6 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
   handleCityChange,
   sellers,
 }) => {
-  const [vehicleInputMode, setVehicleInputMode] = useState<"manual" | "fipe">("manual");
-  
   const handleBrandChange = (brand: string) => {
     handleSelectChange("brand", brand);
   };
@@ -48,10 +44,6 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
   
   const handleYearChange = (year: number) => {
     handleSelectChange("year", year.toString());
-  };
-  
-  const handleFuelChange = (fuel: string) => {
-    handleSelectChange("fuel", fuel);
   };
 
   const onStateChange = (state: string) => {
@@ -79,66 +71,24 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
       handleSelectChange("location", JSON.stringify(newLocation));
     }
   };
-  
-  const handleFipePriceChange = (fipeData: any) => {
-    if (fipeData && fipeData.preco) {
-      // Convert price string like "R$ 50.000,00" to number
-      const priceStr = fipeData.preco.replace('R$ ', '').replace('.', '').replace(',', '.');
-      const priceNum = parseFloat(priceStr);
-      if (!isNaN(priceNum)) {
-        handlePriceChange(priceNum.toString());
-      }
-    }
-  };
 
   return (
     <div className="space-y-6">
-      <Tabs
-        value={vehicleInputMode}
-        onValueChange={(value) => setVehicleInputMode(value as "manual" | "fipe")}
-        className="mb-6"
-        defaultValue="manual"
-      >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="manual">Preenchimento Manual</TabsTrigger>
-          <TabsTrigger value="fipe">Usar Tabela FIPE</TabsTrigger>
-        </TabsList>
-        <TabsContent value="manual" className="pt-4">
-          <TextVehicleInfo
-            initialBrand={formData.brand}
-            initialModel={formData.model}
-            initialYear={formData.year}
-            initialState={formData.location?.state}
-            initialCity={formData.location?.city}
-            onBrandChange={handleBrandChange}
-            onModelChange={handleModelChange}
-            onYearChange={handleYearChange}
-            onStateChange={onStateChange}
-            onCityChange={onCityChange}
-          />
-        </TabsContent>
-        <TabsContent value="fipe" className="pt-4">
-          <FipeVehicleSelector
-            onBrandChange={handleBrandChange}
-            onModelChange={handleModelChange}
-            onYearChange={handleYearChange}
-            onFuelChange={handleFuelChange}
-            onFipePriceChange={handleFipePriceChange}
-            initialBrand={formData.brand}
-            initialModel={formData.model}
-            initialYear={formData.year}
-          />
-          
-          <div className="mt-6">
-            <LocationSelector
-              onStateChange={onStateChange}
-              onCityChange={onCityChange}
-              initialState={formData.location?.state}
-              initialCity={formData.location?.city}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Manual Vehicle Info Form */}
+      <div className="pt-4">
+        <TextVehicleInfo
+          initialBrand={formData.brand}
+          initialModel={formData.model}
+          initialYear={formData.year}
+          initialState={formData.location?.state}
+          initialCity={formData.location?.city}
+          onBrandChange={handleBrandChange}
+          onModelChange={handleModelChange}
+          onYearChange={handleYearChange}
+          onStateChange={onStateChange}
+          onCityChange={onCityChange}
+        />
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="space-y-2">

@@ -1,7 +1,6 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { dashboardStats } from "@/services/mockData"; // Update from mock to real service
 import { DashboardStats } from "@/types";
 import { formatCurrency } from "@/lib/format";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
@@ -9,13 +8,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import AdminLayout from "@/components/AdminLayout";
 import { Car, BarChart3 } from "lucide-react";
+import { getDashboardStats } from "@/services/supabaseService";
 
 const Dashboard: React.FC = () => {
-  // Set up a query
-  const { data: stats = dashboardStats } = useQuery({
+  // Use real data from Supabase
+  const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboardStats'],
-    queryFn: () => Promise.resolve(dashboardStats), // Replace with actual API call
+    queryFn: getDashboardStats,
   });
+
+  // Show loading state while fetching data
+  if (isLoading) {
+    return (
+      <AdminLayout title="Dashboard">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-6 bg-gray-200 rounded w-1/4 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-full mt-2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // If no stats are returned, show empty state
+  if (!stats) {
+    return (
+      <AdminLayout title="Dashboard">
+        <div className="text-center py-10">
+          <h3 className="text-lg font-medium">Não foi possível carregar os dados</h3>
+          <p className="text-gray-500">Tente novamente mais tarde</p>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   // Vehicle status data for pie chart
   const vehicleStatusData = [
@@ -108,7 +141,7 @@ const Dashboard: React.FC = () => {
               <div className="text-xs text-gray-500">{stats.reservedVehicles} reservados</div>
             </div>
             <Progress 
-              value={(stats.soldVehicles + stats.reservedVehicles) / stats.totalVehicles * 100} 
+              value={(stats.soldVehicles + stats.reservedVehicles) / (stats.totalVehicles || 1) * 100} 
               className="h-1 mt-1"
             />
           </CardContent>
@@ -147,7 +180,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <Progress 
-              value={stats.closedProposals / stats.totalProposals * 100} 
+              value={(stats.closedProposals) / (stats.totalProposals || 1) * 100} 
               className="h-1 mt-1"
             />
           </CardContent>

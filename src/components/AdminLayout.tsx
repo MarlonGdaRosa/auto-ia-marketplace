@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/auth";
 import { 
@@ -9,12 +9,23 @@ import {
   MessageSquare, 
   LogOut,
   Menu,
-  X
+  X,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -26,6 +37,53 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [isPWAInstallable, setIsPWAInstallable] = useState(false);
+  const [showPWAPrompt, setShowPWAPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  // Handle PWA installation
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      setDeferredPrompt(e);
+      setIsPWAInstallable(true);
+      
+      // Show the install prompt for mobile devices
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        setShowPWAPrompt(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallPWA = () => {
+    setShowPWAPrompt(false);
+    
+    if (deferredPrompt) {
+      // Show the install prompt
+      deferredPrompt.prompt();
+      
+      // Wait for the user to respond to the prompt
+      deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+        // Clear the saved prompt as it can't be used again
+        setDeferredPrompt(null);
+        setIsPWAInstallable(false);
+      });
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -77,6 +135,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* PWA Installation Dialog */}
+      <AlertDialog open={showPWAPrompt} onOpenChange={setShowPWAPrompt}>
+        <AlertDialogContent className="max-w-[350px] rounded-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Instalar Aplicativo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja instalar o AutoMarket em seu dispositivo para acesso rápido e uso offline?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Agora não</AlertDialogCancel>
+            <AlertDialogAction onClick={handleInstallPWA} className="bg-brand-blue">
+              <Download className="mr-2 h-4 w-4" />
+              Instalar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
       {/* Mobile header */}
       <header className="bg-white border-b border-gray-200 p-4 flex items-center justify-between md:hidden">
         <Link to="/admin/dashboard" className="flex items-center gap-2">
@@ -108,6 +185,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
                 ))}
               </div>
               <div className="p-4 border-t">
+                {isPWAInstallable && (
+                  <Button variant="outline" className="w-full justify-start mb-2" onClick={handleInstallPWA}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Instalar app
+                  </Button>
+                )}
                 <Button variant="ghost" className="w-full justify-start text-red-600" onClick={handleLogout}>
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
@@ -132,6 +215,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
             ))}
           </nav>
           <div className="mt-auto pt-6">
+            {isPWAInstallable && (
+              <Button variant="outline" className="w-full justify-start mb-2" onClick={handleInstallPWA}>
+                <Download className="h-4 w-4 mr-2" />
+                Instalar app
+              </Button>
+            )}
             <Button variant="ghost" className="w-full justify-start text-red-600" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Logout
@@ -140,9 +229,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title }) => 
         </aside>
 
         {/* Main content */}
-        <div className="flex-1">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">{title}</h1>
+        <div className="flex-1 overflow-auto">
+          <div className="p-4 md:p-6">
+            <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">{title}</h1>
             {children}
           </div>
         </div>
