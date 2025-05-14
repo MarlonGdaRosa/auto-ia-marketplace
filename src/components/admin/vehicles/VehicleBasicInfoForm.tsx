@@ -21,6 +21,8 @@ interface VehicleBasicInfoFormProps {
   handlePriceChange: (value: string | undefined) => void;
   handleMileageChange: (value: string | undefined) => void;
   handleSelectChange: (field: string, value: string) => void;
+  handleStateChange?: (state: string) => void;
+  handleCityChange?: (city: string) => void;
   sellers: Seller[];
 }
 
@@ -29,9 +31,11 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
   handlePriceChange,
   handleMileageChange,
   handleSelectChange,
+  handleStateChange,
+  handleCityChange,
   sellers,
 }) => {
-  const [vehicleInputMode, setVehicleInputMode] = useState<"manual" | "fipe">("fipe");
+  const [vehicleInputMode, setVehicleInputMode] = useState<"manual" | "fipe">("manual");
   
   const handleBrandChange = (brand: string) => {
     handleSelectChange("brand", brand);
@@ -47,6 +51,32 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
   
   const handleFuelChange = (fuel: string) => {
     handleSelectChange("fuel", fuel);
+  };
+
+  const onStateChange = (state: string) => {
+    if (handleStateChange) {
+      handleStateChange(state);
+    } else {
+      // Fallback to use handleSelectChange for location
+      const newLocation = {
+        ...formData.location,
+        state: state
+      };
+      handleSelectChange("location", JSON.stringify(newLocation));
+    }
+  };
+  
+  const onCityChange = (city: string) => {
+    if (handleCityChange) {
+      handleCityChange(city);
+    } else {
+      // Fallback to use handleSelectChange for location
+      const newLocation = {
+        ...formData.location,
+        city: city
+      };
+      handleSelectChange("location", JSON.stringify(newLocation));
+    }
   };
   
   const handleFipePriceChange = (fipeData: any) => {
@@ -68,9 +98,23 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
         className="mb-6"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="fipe">Usar Tabela FIPE</TabsTrigger>
           <TabsTrigger value="manual">Preenchimento Manual</TabsTrigger>
+          <TabsTrigger value="fipe">Usar Tabela FIPE</TabsTrigger>
         </TabsList>
+        <TabsContent value="manual" className="pt-4">
+          <TextVehicleInfo
+            initialBrand={formData.brand}
+            initialModel={formData.model}
+            initialYear={formData.year}
+            initialState={formData.location?.state}
+            initialCity={formData.location?.city}
+            onBrandChange={handleBrandChange}
+            onModelChange={handleModelChange}
+            onYearChange={handleYearChange}
+            onStateChange={onStateChange}
+            onCityChange={onCityChange}
+          />
+        </TabsContent>
         <TabsContent value="fipe" className="pt-4">
           <FipeVehicleSelector
             onBrandChange={handleBrandChange}
@@ -82,16 +126,15 @@ const VehicleBasicInfoForm: React.FC<VehicleBasicInfoFormProps> = ({
             initialModel={formData.model}
             initialYear={formData.year}
           />
-        </TabsContent>
-        <TabsContent value="manual" className="pt-4">
-          <TextVehicleInfo
-            initialBrand={formData.brand}
-            initialModel={formData.model}
-            initialYear={formData.year}
-            onBrandChange={handleBrandChange}
-            onModelChange={handleModelChange}
-            onYearChange={handleYearChange}
-          />
+          
+          <div className="mt-6">
+            <LocationSelector
+              onStateChange={onStateChange}
+              onCityChange={onCityChange}
+              initialState={formData.location?.state}
+              initialCity={formData.location?.city}
+            />
+          </div>
         </TabsContent>
       </Tabs>
 

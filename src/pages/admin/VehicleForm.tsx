@@ -1,8 +1,7 @@
-
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VehicleBasicInfoForm from "@/components/admin/vehicles/VehicleBasicInfoForm";
 import VehicleDescriptionForm from "@/components/admin/vehicles/VehicleDescriptionForm";
@@ -28,6 +27,8 @@ const VehicleForm: React.FC = () => {
     setFormData,
     handleInputChange,
     handleSelectChange,
+    handleStateChange,
+    handleCityChange,
     handleFipeData,
     handleSubmit,
     isSubmitting,
@@ -76,6 +77,8 @@ const VehicleForm: React.FC = () => {
               handlePriceChange={(value) => handleSelectChange("price", value || "0")}
               handleMileageChange={(value) => handleSelectChange("mileage", value || "0")}
               handleSelectChange={handleSelectChange}
+              handleStateChange={handleStateChange}
+              handleCityChange={handleCityChange}
               sellers={sellers}
             />
           </TabsContent>

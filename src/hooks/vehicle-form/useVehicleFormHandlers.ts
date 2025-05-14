@@ -74,10 +74,26 @@ export const useVehicleFormHandlers = (
   };
 
   const handleSelectChange = (field: string, value: string) => {
-    setFormData({
-      ...formData,
-      [field]: value,
-    });
+    if (field === "location") {
+      try {
+        const locationObj = JSON.parse(value);
+        setFormData({
+          ...formData,
+          location: locationObj
+        });
+      } catch (error) {
+        console.error("Error parsing location JSON:", error);
+        setFormData({
+          ...formData,
+          [field]: value,
+        });
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [field]: value,
+      });
+    }
   };
 
   const handleStateChange = (state: string) => {

@@ -3,6 +3,7 @@ import { useVehicleFormImplementation } from "./vehicle-form/useVehicleFormImple
 import { Vehicle } from "@/types";
 import { getVehicleById } from "@/services/supabaseService";
 import { useQuery } from "@tanstack/react-query";
+import { useVehicleFormHandlers } from "./vehicle-form";
 
 export interface UseVehicleFormOptions {
   vehicleId?: string;
@@ -28,6 +29,12 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
     initialData: initialData || existingVehicle
   });
 
+  // Get additional form handlers
+  const { handleStateChange, handleCityChange } = useVehicleFormHandlers(
+    vehicleForm.formData, 
+    vehicleForm.setFormData
+  );
+
   // Modify the handleSubmit to accept and process the form event
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) {
@@ -39,6 +46,8 @@ export const useVehicleForm = (options?: UseVehicleFormOptions) => {
   return {
     ...vehicleForm,
     handleSubmit,
+    handleStateChange,
+    handleCityChange,
     isLoadingVehicle: isLoading,
     error,
     existingVehicle: initialData || existingVehicle
