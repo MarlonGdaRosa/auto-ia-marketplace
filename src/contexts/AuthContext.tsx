@@ -1,5 +1,6 @@
 
-// This file is now just a re-export from the auth directory
-import { useAuth, AuthProvider } from './auth/index';
-export { useAuth, AuthProvider };
-export type { User, AuthContextType } from './auth/types';
+import { AuthProvider, useAuth } from './auth/index';
+import type { User, AuthContextType } from './auth/types';
+
+export { AuthProvider, useAuth };
+export type { User, AuthContextType };
