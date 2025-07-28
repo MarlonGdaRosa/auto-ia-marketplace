@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,10 +18,6 @@ export default {
 			}
 		},
 		extend: {
-			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-				heading: ['Montserrat', 'sans-serif'],
-			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -67,13 +62,25 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Customized colors
-				brand: {
-					blue: '#3B82F6',
-					yellow: '#FBBF24',
-					'blue-dark': '#2563EB',
-					'yellow-dark': '#D97706',
+				teal: {
+					primary: 'hsl(var(--teal-primary))',
+					secondary: 'hsl(var(--teal-secondary))',
+					light: 'hsl(var(--teal-light))'
+				},
+				lime: {
+					accent: 'hsl(var(--lime-accent))',
+					bright: 'hsl(var(--lime-bright))'
 				}
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-accent': 'var(--gradient-accent)'
+			},
+			boxShadow: {
+				'teal': 'var(--shadow-teal)'
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -96,20 +103,11 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				'fade-in': {
-					from: {
-						opacity: '0'
-					},
-					to: {
-						opacity: '1'
-					}
-				},
+				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},

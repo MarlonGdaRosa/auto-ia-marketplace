@@ -7,166 +7,109 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instanciate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          cpf: string | null
-          created_at: string
-          email: string
-          id: string
-          name: string
-          phone: string | null
-          role: string | null
-        }
-        Insert: {
-          cpf?: string | null
-          created_at?: string
-          email: string
-          id: string
-          name: string
-          phone?: string | null
-          role?: string | null
-        }
-        Update: {
-          cpf?: string | null
-          created_at?: string
-          email?: string
-          id?: string
-          name?: string
-          phone?: string | null
-          role?: string | null
-        }
-        Relationships: []
-      }
-      proposals: {
+      custom_field_definitions: {
         Row: {
           created_at: string
-          email: string
+          display_order: number
+          field_key: string
+          field_name: string
+          field_options: Json | null
+          field_type: string
           id: string
-          message: string
-          name: string
-          phone: string
-          status: string | null
-          vehicle_id: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          message: string
-          name: string
-          phone: string
-          status?: string | null
-          vehicle_id: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          message?: string
-          name?: string
-          phone?: string
-          status?: string | null
-          vehicle_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "proposals_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      sellers: {
-        Row: {
-          city: string
-          created_at: string
-          email: string | null
-          id: string | null
-          id_seller: string
-          name: string
-          phone: string
-          state: string
-        }
-        Insert: {
-          city: string
-          created_at?: string
-          email?: string | null
-          id?: string | null
-          id_seller?: string
-          name: string
-          phone: string
-          state: string
-        }
-        Update: {
-          city?: string
-          created_at?: string
-          email?: string | null
-          id?: string | null
-          id_seller?: string
-          name?: string
-          phone?: string
-          state?: string
-        }
-        Relationships: []
-      }
-      vehicles: {
-        Row: {
-          brand: string
-          created_at: string
-          description: string
-          features: string[]
-          fuel: string
-          id: string
-          images: string[]
-          location: Json
-          mileage: number
-          model: string
-          price: number
-          seller_id: string | null
-          status: string
-          transmission: string
+          is_required: boolean
           updated_at: string
-          year: number
         }
         Insert: {
-          brand: string
           created_at?: string
-          description: string
-          features?: string[]
-          fuel: string
+          display_order?: number
+          field_key: string
+          field_name: string
+          field_options?: Json | null
+          field_type: string
           id?: string
-          images?: string[]
-          location: Json
-          mileage: number
-          model: string
-          price: number
-          seller_id?: string | null
-          status?: string
-          transmission: string
+          is_required?: boolean
           updated_at?: string
-          year: number
         }
         Update: {
-          brand?: string
           created_at?: string
-          description?: string
-          features?: string[]
-          fuel?: string
+          display_order?: number
+          field_key?: string
+          field_name?: string
+          field_options?: Json | null
+          field_type?: string
           id?: string
-          images?: string[]
-          location?: Json
-          mileage?: number
-          model?: string
-          price?: number
-          seller_id?: string | null
-          status?: string
-          transmission?: string
+          is_required?: boolean
           updated_at?: string
-          year?: number
+        }
+        Relationships: []
+      }
+      store_submissions: {
+        Row: {
+          cep: string | null
+          city: string | null
+          complement: string | null
+          cpf_cnpj: string | null
+          created_at: string
+          custom_fields: Json | null
+          email: string
+          id: string
+          neighborhood: string | null
+          number: string | null
+          phone: string | null
+          state: string | null
+          status: string
+          store_name: string
+          store_type: string
+          store_url: string | null
+          street: string | null
+          updated_at: string
+        }
+        Insert: {
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email: string
+          id?: string
+          neighborhood?: string | null
+          number?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          store_name: string
+          store_type: string
+          store_url?: string | null
+          street?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
+          cpf_cnpj?: string | null
+          created_at?: string
+          custom_fields?: Json | null
+          email?: string
+          id?: string
+          neighborhood?: string | null
+          number?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          store_name?: string
+          store_type?: string
+          store_url?: string | null
+          street?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -186,21 +129,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -218,14 +165,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -241,14 +190,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -264,14 +215,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -279,14 +232,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
